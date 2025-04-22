@@ -1,0 +1,106 @@
+<script setup lang="ts">
+// Swiper、SwiperSlide 元件
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
+
+// 模組
+import { Autoplay, Grid, Navigation, Pagination } from 'swiper/modules'
+
+// 基本樣式與模組的樣式
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
+import 'swiper/css/autoplay'
+import 'swiper/css/grid'
+
+const modules = ref([Navigation, Pagination, Grid, Autoplay])
+
+const products = reactive([
+  { name: '商品名稱', category: '類別', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383616723.jpg' },
+  { name: '商品名稱2', category: '類別2', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383646743.jpg' },
+  { name: '商品名稱3', category: '類別3', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383672400.jpg' },
+  { name: '商品名稱4', category: '類別4', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383712130.jpg' },
+  { name: '商品名稱5', category: '類別5', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383726339.jpg' },
+  { name: '商品名稱6', category: '類別6', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383737063.jpg' },
+  { name: '商品名稱7', category: '類別7', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383749908.jpg' },
+  { name: '商品名稱8', category: '類別8', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383760395.jpg' },
+  { name: '商品名稱9', category: '類別9', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383770961.jpg' },
+  { name: '商品名稱10', category: '類別10', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383796345.jpg' },
+  { name: '商品名稱11', category: '類別11', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383785733.jpg' },
+  { name: '商品名稱12', category: '類別12', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383824144.jpg' },
+])
+
+const breakpoints = useBreakpoints(breakpointsTailwind)
+
+const mdAndLarger = breakpoints.greaterOrEqual('md')
+const lgAndLarger = breakpoints.greaterOrEqual('lg')
+const slidesPerView = computed(() => {
+  if (lgAndLarger.value) { return 3 }
+  if (mdAndLarger.value) { return 2 }
+  return 1
+})
+</script>
+
+<template>
+  <div>
+    <Swiper :slides-per-view="slidesPerView" :space-between="17" :modules="modules" :grid="{
+      rows: 2,
+      fill: 'row',
+    }" :autoplay="{
+      delay: 2000,
+      disableOnInteraction: true,
+    }">
+      <SwiperSlide v-for="{ name, category, imageUrl } in products" :key="name">
+        <div class="slide" :style="{ backgroundImage: `url(${imageUrl})` }">
+          <span class="tittle">
+            {{ category }}
+          </span>
+          <div class="overlay">
+            {{ name }}
+          </div>
+        </div>
+      </SwiperSlide>
+    </Swiper>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.slide {
+  background: #fff;
+  height: 248px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  border: var(--third-color) solid 1px;
+}
+
+span {
+  display: inline-block;
+  padding: 4px;
+  background-color: var(--third-color);
+  color: #fff;
+  text-shadow: 1px 1px 1px #ccc;
+  line-height: 1.5;
+}
+
+.overlay {
+  &:hover {
+    opacity: 1;
+  }
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(52, 58, 64, 0.5);
+  opacity: 0;
+  transition: all 0.3s ease;
+  color: #fff;
+  font-size: 1.5rem;
+  letter-spacing: 0.2rem;
+}
+</style>
