@@ -66,7 +66,7 @@ const cartProductCount = ref(88)
           </li>
           <li class="p-2">
             <LickList #="{ slotMethod }">
-              <a href="#" role="button" tabindex="0" @click="slotMethod">
+              <a role="button" tabindex="0" @click="slotMethod">
                 <OverlayBadge :dt="overlayBadgeDt" :value="cartProductCount" severity="danger" size="small">
                   <font-awesome-icon :icon="['fas', 'cart-shopping']" size="lg" />
                 </OverlayBadge>

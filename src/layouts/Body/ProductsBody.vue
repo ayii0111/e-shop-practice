@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Breadcrumb } from 'primevue'
+import { ProductList, SideNavbar } from './Products'
 
 const home = ref({
   label: 'Home',
@@ -38,8 +39,8 @@ console.log('breadcrumbItems', breadcrumbItems.value)
 </script>
 
 <template>
-  <div>
-    <Breadcrumb :home="home" :model="breadcrumbItems" class="bg-[--gray-bg] mb-4 py-3 px-4">
+  <div class="max-sm:flex max-sm:flex-col max-sm:items-center">
+    <Breadcrumb :home="home" :model="breadcrumbItems" class="bg-[--gray-bg] mb-4 px-4 py-3 max-sm:w-full">
       <template #item="{ item }">
         <RouterLink :to="item.to">
           <span> {{ item.label }} </span>
@@ -51,9 +52,9 @@ console.log('breadcrumbItems', breadcrumbItems.value)
       </template>
     </Breadcrumb>
     <RouterView />
-    <div class="grid grid-cols-6 gap-[32px] relative items-start">
-      <RouterView class="col-span-1  sticky top-[16px]" name="SideNavbar" />
-      <RouterView class="col-span-5 h-[1500px] " name="ProductList" />
+    <div class="relative max-sm:flex max-sm:flex-col gap-2 sm:gap-[32px] md:grid md:grid-cols-12">
+      <SideNavbar class="md:top-[16px] md:sticky md:self-start md:col-span-3 lg:col-span-2" />
+      <ProductList class="md:col-span-9 lg:col-span-10 h-[1500px]" />
     </div>
   </div>
 </template>

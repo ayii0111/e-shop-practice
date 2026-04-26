@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { AutoComplete, Button } from 'primevue'
+import { AutoComplete, Button, Select } from 'primevue'
+
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
 const items = reactive([
   { icon: ['fas', 'gift'], en: 'ALL', cn: '全部商品', tabName: 'all', path: '/products/all' },
@@ -41,23 +43,88 @@ function onFormSubmit({ valid }: any) {
 
 const value = ref('')
 const arr = ref([]) as Ref<string[]>
+
+const selectedCategory = ref()
+
+const items_ = ref([
+  { icon: ['fas', 'gift'], Category: '全部商品', path: '/products/all' },
+  { icon: ['fas', 'shirt'], Category: '上半身', path: '/products/top' },
+  { icon: ['fas', 'socks'], Category: '下半身', path: '/products/bottom' },
+  { icon: ['fas', 'shoe-prints'], Category: '鞋', path: '/products/shoes' },
+  { icon: ['fas', 'democrat'], Category: '飾品', path: '/products/accessory' },
+  { icon: ['fas', 'shopping-bag'], Category: '配件', path: '/products/life' },
+])
+
+const router = useRouter()
+watch(selectedCategory, (newValue) => {
+  router.push(newValue.path)
+})
+const dt = {
+  root: {
+    color: '#fff',
+    background: '#e6dfd7',
+    borderColor: '#e6dfd7',
+    focusBorderColor: '#e6dfd7',
+    hoverBorderColor: '#e6dfd7',
+    placeholderColor: '#fff',
+  },
+  dropdownColor: '#fff',
+}
+
+const selectPt = {
+  overlay: {
+    style: {
+      '--p-select-option-focus-background': 'transparent',
+      '--p-select-option-focus-color': '#e6dfd7',
+      '--p-select-option-selected-background': '#e6dfd7',
+      '--p-select-option-selected-focus-background': '#e6dfd7',
+      '--p-select-option-color': '#e6dfd7',
+      '--p-select-option-selected-color': '#fff',
+      '--p-select-option-selected-focus-color': '#fff',
+    },
+  },
+}
+
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const isMobile = breakpoints.smaller('md') // 自動響應的 Ref<boolean>
 </script>
 
 <template>
-  <div>
-    <ul class="text-[--secondary-text-color] mb-4 rounded border-[rgba(0,0,0,.125)] border divide-y divide-[rgba(0,0,0,.125)]">
-      <li v-for="item in items" :key="item.en" class=" hover:bg-[#f5f5f5]" :class="decideTabStyle(item.tabName).value" @click="clickedTab(item.tabName)">
-        <RouterLink :to="item.path" class="block size-full px-5 py-3">
-          <span><font-awesome-icon :icon="item.icon" class="mr-2" /></span>
-          <span>{{ item.cn }}</span>
-        </RouterLink>
-      </li>
-    </ul>
+  <div class="max-md:flex max-sm:flex-col-reverse max-md:items-baseline gap-2">
+    <div v-if="!isMobile">
+      <ul class="mb-4 border border-[rgba(0,0,0,.125)] rounded divide-y divide-[rgba(0,0,0,.125)] text-[--secondary-text-color]">
+        <li v-for="item in items" :key="item.en" class="hover:bg-[#f5f5f5]" :class="decideTabStyle(item.tabName).value" @click="clickedTab(item.tabName)">
+          <RouterLink :to="item.path" class="block px-5 py-3 size-full">
+            <span><font-awesome-icon :icon="item.icon" class="mr-2" /></span>
+            <span>{{ item.cn }}</span>
+          </RouterLink>
+        </li>
+      </ul>
+    </div>
+    <div v-else class="mr-4 max-sm:w-full">
+      <Select v-model="selectedCategory" :dt="dt" :pt="selectPt" :options="items_" optionLabel="name" placeholder="商品種類" class="!w-full">
+        <template #value="slotProps">
+          <div v-if="slotProps.value" class="flex items-center px-3">
+            <span><font-awesome-icon :icon="slotProps.value.icon" class="mr-2" /></span>
+            <div>{{ slotProps.value.Category }}</div>
+          </div>
+          <span v-else>
+            {{ slotProps.placeholder }}
+          </span>
+        </template>
+        <template #option="slotProps">
+          <div class="flex items-center px-3">
+            <span><font-awesome-icon :icon="slotProps.option.icon" class="mr-2" /></span>
+            <div>{{ slotProps.option.Category }}</div>
+          </div>
+        </template>
+      </Select>
+    </div>
 
-    <!-- <Form v-slot="$form" :resolver="resolver" :initialValues="initialValues" class="overflow-hidden  mb-4 flex h-[38px] rounded border-[#ced4da] border divide-x divide-[#ced4da]" @submit="onFormSubmit"> -->
-    <Form :resolver="resolver" :initialValues="initialValues" class="overflow-hidden  mb-4 flex h-[38px] rounded border-[#ced4da] border divide-x divide-[#ced4da]" @submit="onFormSubmit">
+    <!-- <Form v-slot="$form" :resolver="resolver" :initialValues="initialValues" class="flex mb-4 border border-[#ced4da] rounded divide-x divide-[#ced4da] h-[38px] overflow-hidden" @submit="onFormSubmit"> -->
+    <Form :resolver="resolver" :initialValues="initialValues" class="flex sm:mb-4 border border-[#ced4da] rounded divide-x divide-[#ced4da] max-sm:w-full max-md:w-[176px] h-[38px] overflow-hidden" @submit="onFormSubmit">
       <AutoComplete v-model="value" class="flex-1" pt:pcInputText:root="w-full rounded-none border-0 shadow-none" :suggestions="arr" @complete="search" />
-      <Button class="px-[12px]  rounded-none flex-none  border-0 shadow-none" type="submit" severity="secondary" label="">
+      <Button class="flex-none shadow-none px-[12px] border-0 rounded-none" type="submit" severity="secondary" label="">
         <font-awesome-icon :icon="['fas', 'search']" />
       </Button>
     </Form>

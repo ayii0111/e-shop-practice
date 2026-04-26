@@ -5,7 +5,6 @@ import SpecialDeal from './Home/SpecialDeal.vue'
 import ProductCarousel from './Home/ProductCarousel.vue'
 import NewAndHotProduction from './Home/NewAndHotProduction.vue'
 import Subscription from './Home/Subscription.vue'
-
 </script>
 
 <template>

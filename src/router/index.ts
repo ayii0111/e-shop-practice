@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Home from '../layouts/Body/Home.vue' // 靜態匯入 Home 組件
-import Products from '../layouts/Body/Products.vue'
+import Home from '../layouts/Body/HomeBody.vue' // 靜態匯入 Home 組件
+import Products from '../layouts/Body/ProductsBody.vue'
 import ProductList from '../layouts/Body/Products/ProductList.vue'
 import SideNavbar from '../layouts/Body/Products/SideNavbar.vue'
 

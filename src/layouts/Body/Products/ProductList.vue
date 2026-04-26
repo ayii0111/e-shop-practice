@@ -55,33 +55,33 @@ const products = ref([
 </script>
 
 <template>
-  <div class="grid grid-cols-3 auto-rows-min gap-x-[22px] gap-y-[14px] ">
-    <div v-for="item in products" :key="item.id" class="min-h-[200px] border border-[--secondary-color] rounded">
-      <div src="" alt="" class="h-[200px] border-b relative">
-        <div class="absolute top-2 right-2 size-[20px] ">
-          <a v-if="item.isLike" href="" class="w-full h-full flex items-center justify-center">
+  <div class="flex flex-col items-center gap-x-[22px] gap-y-[14px] sm:grid sm:grid-cols-2 lg:grid-cols-3 auto-rows-min">
+    <div v-for="item in products" :key="item.id" class="border border-[--secondary-color] rounded max-sm:w-[291px] sm:max-w-[291px] min-h-[200px]">
+      <div src="" alt="" class="relative border-b h-[200px]">
+        <div class="top-2 right-2 z-0 absolute size-[20px]">
+          <a v-if="item.isLike" href="" class="flex justify-center items-center w-full h-full">
             <i class="pi pi-heart-fill icon"></i>
           </a>
-          <a v-else href="" class="w-full h-full flex items-center justify-center">
+          <a v-else href="" class="flex justify-center items-center w-full h-full">
             <i class="pi pi-heart icon"></i>
           </a>
         </div>
       </div>
-      <div class=" py-2 px-5 border-b"> 
-        <h5 class="text-xl font-medium ">
+      <div class="px-5 py-2 border-b">
+        <h5 class="font-medium text-xl">
           {{ item.name }}
         </h5>
-        <div class="flex items-center justify-between">
-          <span class="text-[--gray-icon] text-sm line-through font-normal">${{ item.originalPrice }}</span>
-          <span class="text-xl text-[--danger-color] font-medium">NT ${{ item.salePrice }}</span>
+        <div class="flex justify-between items-center">
+          <span class="font-normal text-[--gray-icon] text-sm line-through">${{ item.originalPrice }}</span>
+          <span class="font-medium text-[--danger-color] text-xl">NT ${{ item.salePrice }}</span>
         </div>
       </div>
-      <div class="grid grid-cols-2 text-center text-base ">
-        <RouterLink :to="{ path: '/products/cloth/product' }" class="hover:bg-[--secondary-color] border-r py-2 ">
+      <div class="grid grid-cols-2 text-base text-center">
+        <RouterLink :to="{ path: '/products/cloth/product' }" class="hover:bg-[--secondary-color] py-2 border-r">
           查看商品
         </RouterLink>
-        <!-- <a href="" class="hover:bg-[--secondary-color] border-r py-2 ">查看商品</a> -->
-        <a href="" class="hover:bg-[--secondary-color] py-2 ">加到購物車</a>
+        <!-- <a href="" class="hover:bg-[--secondary-color] py-2 border-r">查看商品</a> -->
+        <a href="" class="hover:bg-[--secondary-color] py-2">加到購物車</a>
       </div>
     </div>
   </div>
@@ -89,7 +89,7 @@ const products = ref([
 
 <style scoped lang="scss">
 .icon {
-  @apply text-[--danger-color] text-[16px] leading-[16px] size-[16px];
-  @apply flex items-center justify-center;
+  @apply size-[16px] text-[--danger-color] text-[16px] leading-[16px];
+  @apply flex justify-center items-center;
 }
 </style>

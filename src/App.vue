@@ -5,7 +5,7 @@ import Footer from './layouts/Footer.vue'
 </script>
 
 <template>
-  <div class="container mx-auto max-w-[1140px] px-4">
+  <div class="mx-auto px-2 sm:px-16 lg:px-4 max-w-[1140px] container">
     <Header />
 
     <Body />
