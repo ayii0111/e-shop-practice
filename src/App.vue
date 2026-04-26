@@ -2,6 +2,22 @@
 import Header from './layouts/Header.vue'
 import Body from './layouts/Body.vue'
 import Footer from './layouts/Footer.vue'
+
+const breakpoints = useBreakpoints({
+  'sm': 640,
+  'md': 768,
+  'lg': 1024,
+  'xl': 1280,
+  '2xl': 1536,
+})
+const current = computed(() => {
+  if (breakpoints['2xl'].value) { return '2xl' }
+  if (breakpoints.xl.value) { return 'xl' }
+  if (breakpoints.lg.value) { return 'lg' }
+  if (breakpoints.md.value) { return 'md' }
+  if (breakpoints.sm.value) { return 'sm' }
+  return 'xs'
+})
 </script>
 
 <template>
@@ -10,6 +26,10 @@ import Footer from './layouts/Footer.vue'
 
     <Body />
     <Footer />
+    <!-- 斷點指示器（開發用） -->
+    <div class="right-4 bottom-4 z-[9999] fixed bg-black/70 px-3 py-1 rounded-full font-mono text-white text-xs">
+      {{ current }}
+    </div>
   </div>
 </template>
 

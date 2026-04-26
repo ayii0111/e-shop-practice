@@ -78,8 +78,8 @@ const breadcrumbItems = computed(() => {
         /
       </template>
     </Breadcrumb>
-    <div class="grid grid-cols-12 pb-16">
-      <div class="col-span-7">
+    <div class="max-sm:flex max-sm:flex-col md:grid md:grid-cols-12 pb-16">
+      <div class="md:col-span-7">
         <Galleria :value="images" :responsiveOptions="responsiveOptions" :numVisible="5" containerStyle="max-width: 100%;">
           <template #item="slotProps">
             <!-- <img class="max-h-[calc(100vh-138px-92px-32px)]" :src="slotProps.item.itemImageSrc" :alt="slotProps.item.alt" /> -->
@@ -90,12 +90,12 @@ const breadcrumbItems = computed(() => {
           </template>
         </Galleria>
       </div>
-      <div class="col-span-5 px-8">
+      <div class="md:col-span-5 px-2 md:px-8 pt-3">
         <div class="space-x-2 mb-2">
           <Tag severity="warn" :dt="tagDT" value="new" rounded></Tag>
           <Tag severity="info" :dt="tagDT" value="有現貨" rounded></Tag>
         </div>
-        <h1 class="font-bold text-2xl">
+        <h1 class="font-bold text-xl sm:text-2xl">
           MIT 貓咪藝術品印花短T
         </h1>
         <p class="mb-4 text-base">
@@ -106,24 +106,11 @@ const breadcrumbItems = computed(() => {
         </div>
 
         <hr class="mb-4">
-        <!-- <div class="flex gap-1">
-          <div class="border border-gray-300 w-[90px] h-[70px]">
-            1
-          </div>
-          <div class="border border-gray-300 w-[90px] h-[70px]">
-            2
-          </div>
-          <div class="border border-gray-300 w-[90px] h-[70px]">
-            3
-          </div>
-          <div class="border border-gray-300 w-[90px] h-[70px]">
-            3
-          </div>
-        </div> -->
+
         <div class="mt-12">
           <Tag severity="info" :dt="tagDT" value="滿額增" rounded></Tag>
           <span> 滿 3,000元送 100元</span>
-          <p class="mb-2 font-bold text-red-500 text-2xl">
+          <p class="mb-2 font-bold text-red-500 text-xl sm:text-2xl">
             NT$ 1999
           </p>
           <p class="mb-2 text-gray-500 text-sm">
@@ -150,9 +137,11 @@ const breadcrumbItems = computed(() => {
             Like
           </Tag>
 
-          <a href=""><img src="@icon/link.png" class="ml-10 size-8" alt=""></a>
-          <a href=""><img src="@icon/line.svg" class="ml-1 size-8" alt=""></a>
-          <a href=""><img src="@icon/facebook.svg" class="ml-1 size-8" alt=""></a>
+          <span class="flex gap-1 ml-10 shrink-0">
+            <a href=""><img src="@icon/link.png" class="size-8" alt=""></a>
+            <a href=""><img src="@icon/line.svg" class="size-8" alt=""></a>
+            <a href=""><img src="@icon/facebook.svg" class="size-8" alt=""></a>
+          </span>
         </div>
         <Button label="加入購物車" severity="danger" class="mt-2 rounded-full w-full" />
       </div>
