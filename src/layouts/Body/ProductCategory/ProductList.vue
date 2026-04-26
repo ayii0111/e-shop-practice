@@ -77,7 +77,7 @@ const products = ref([
         </div>
       </div>
       <div class="grid grid-cols-2 text-base text-center">
-        <RouterLink :to="{ path: '/products/cloth/product' }" class="hover:bg-[--secondary-color] py-2 border-r">
+        <RouterLink :to="{ path: '/' }" class="hover:bg-[--secondary-color] py-2 border-r">
           查看商品
         </RouterLink>
         <!-- <a href="" class="hover:bg-[--secondary-color] py-2 border-r">查看商品</a> -->

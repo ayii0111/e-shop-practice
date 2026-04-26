@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Breadcrumb } from 'primevue'
-import { ProductList, SideNavbar } from './Products'
+import { ProductList, SideNavbar } from './ProductCategory'
 
 const home = ref({
   label: 'Home',
@@ -21,10 +21,10 @@ const breadcrumbItems = computed(() => {
 
   // 把麵包屑的 products 位址：改成 /products/all
   const paths = _paths.map((path) => {
-    if (path === '/products') { return '/products/all' }
+    if (path === '/productCategory') { return '/productCategory/all' }
     return path
   })
-  // 建構元件所需的數據格式 [ ..., { label: 'ALL', to: '/products/all', disabled: true }]
+  // 建構元件所需的數據格式 [ ..., { label: 'ALL', to: '/productCategory/all', disabled: true }]
   return items.map((item, index) => ({
     label: item[0].toUpperCase() + item.slice(1),
     to: paths[index],
@@ -45,16 +45,16 @@ console.log('breadcrumbItems', breadcrumbItems.value)
         <RouterLink :to="item.to">
           <span> {{ item.label }} </span>
         </RouterLink>
-        <!-- <a class="cursor-pointer" :href="item.to"></a> -->
+        <a class="cursor-pointer" :href="item.to"></a>
       </template>
       <template #separator>
         /
       </template>
     </Breadcrumb>
-    <RouterView />
     <div class="relative max-sm:flex max-sm:flex-col gap-2 sm:gap-[32px] md:grid md:grid-cols-12">
       <SideNavbar class="md:top-[16px] md:sticky md:self-start md:col-span-3 lg:col-span-2" />
-      <ProductList class="md:col-span-9 lg:col-span-10 h-[1500px]" />
+      <!-- <ProductList class="md:col-span-9 lg:col-span-10 h-[1500px]" /> -->
+      <RouterView class="md:col-span-9 lg:col-span-10 h-[1500px]" />
     </div>
   </div>
 </template>

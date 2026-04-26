@@ -1,8 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Home from '../layouts/Body/HomeBody.vue' // 靜態匯入 Home 組件
-import Products from '../layouts/Body/ProductsBody.vue'
-import ProductList from '../layouts/Body/Products/ProductList.vue'
-import SideNavbar from '../layouts/Body/Products/SideNavbar.vue'
+import HomeBody from '../layouts/Body/HomeBody.vue' // 靜態匯入 Home 組件
+import ProductCategoryBody from '../layouts/Body/ProductCategoryBody.vue'
+import ProductList from '../layouts/Body/ProductCategory/ProductList.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -15,26 +14,24 @@ const router = createRouter({
     {
       path: '/',
       name: 'Home',
-      component: Home,
+      component: HomeBody,
     },
     {
-      path: '/products',
-      component: Products,
+      path: '/productCategory',
+      component: ProductCategoryBody,
       children: [
         {
-          path: 'cloth/product',
-          component: () => import('../layouts/Body/Products/Product.vue'),
-        },
-        {
-          path: ':category',
-          name: 'Products',
-          components: {
-            ProductList,
-            SideNavbar,
-          },
+          path: 'ProductList/:category',
+          name: 'ProductList',
+          component: ProductList,
         },
       ],
     },
+    // {
+    //   path: '/cloth/product',
+    //   name: 'Home',
+    //   component: () => import('../layouts/Body/ProductDetailBody.vue'),
+    // },
 
   ],
 })

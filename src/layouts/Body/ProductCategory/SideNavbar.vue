@@ -4,12 +4,12 @@ import { AutoComplete, Button, Select } from 'primevue'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
 const items = reactive([
-  { icon: ['fas', 'gift'], en: 'ALL', cn: '全部商品', tabName: 'all', path: '/products/all' },
-  { icon: ['fas', 'shirt'], en: 'TOP', cn: '上半身', tabName: 'top', path: '/products/top' },
-  { icon: ['fas', 'socks'], en: 'BOTTOM', cn: '下半身', tabName: 'bottom', path: '/products/bottom' },
-  { icon: ['fas', 'shoe-prints'], en: 'SHOES', cn: '鞋', tabName: 'shoes', path: '/products/shoes' },
-  { icon: ['fas', 'democrat'], en: 'ACCESSORY', cn: '飾品', tabName: 'accessory', path: '/products/accessory' },
-  { icon: ['fas', 'shopping-bag'], en: 'LIFE', cn: '配件', tabName: 'life', path: '/products/life' },
+  { icon: ['fas', 'gift'], Category: '全部商品', tabName: 'all', path: '/productCategory/ProductList/all' },
+  { icon: ['fas', 'shirt'], Category: '上半身', tabName: 'top', path: '/productCategory/ProductList/top' },
+  { icon: ['fas', 'socks'], Category: '下半身', tabName: 'bottom', path: '/productCategory/ProductList/bottom' },
+  { icon: ['fas', 'shoe-prints'], Category: '鞋', tabName: 'shoes', path: '/productCategory/ProductList/shoes' },
+  { icon: ['fas', 'democrat'], Category: '飾品', tabName: 'accessory', path: '/productCategory/ProductList/accessory' },
+  { icon: ['fas', 'shopping-bag'], Category: '配件', tabName: 'life', path: '/productCategory/ProductList/life' },
 ])
 
 // ------------------------------ 標籤樣式(起) ------------------------------
@@ -47,12 +47,12 @@ const arr = ref([]) as Ref<string[]>
 const selectedCategory = ref()
 
 const items_ = ref([
-  { icon: ['fas', 'gift'], Category: '全部商品', path: '/products/all' },
-  { icon: ['fas', 'shirt'], Category: '上半身', path: '/products/top' },
-  { icon: ['fas', 'socks'], Category: '下半身', path: '/products/bottom' },
-  { icon: ['fas', 'shoe-prints'], Category: '鞋', path: '/products/shoes' },
-  { icon: ['fas', 'democrat'], Category: '飾品', path: '/products/accessory' },
-  { icon: ['fas', 'shopping-bag'], Category: '配件', path: '/products/life' },
+  { icon: ['fas', 'gift'], Category: '全部商品', path: '/productCategory/ProductList/all' },
+  { icon: ['fas', 'shirt'], Category: '上半身', path: '/productCategory/ProductList/top' },
+  { icon: ['fas', 'socks'], Category: '下半身', path: '/productCategory/ProductList/bottom' },
+  { icon: ['fas', 'shoe-prints'], Category: '鞋', path: '/productCategory/ProductList/shoes' },
+  { icon: ['fas', 'democrat'], Category: '飾品', path: '/productCategory/ProductList/accessory' },
+  { icon: ['fas', 'shopping-bag'], Category: '配件', path: '/productCategory/ProductList/life' },
 ])
 
 const router = useRouter()
@@ -93,10 +93,10 @@ const isMobile = breakpoints.smaller('md') // 自動響應的 Ref<boolean>
   <div class="max-md:flex max-sm:flex-col-reverse max-md:items-baseline gap-2">
     <div v-if="!isMobile">
       <ul class="mb-4 border border-[rgba(0,0,0,.125)] rounded divide-y divide-[rgba(0,0,0,.125)] text-[--secondary-text-color]">
-        <li v-for="item in items" :key="item.en" class="hover:bg-[#f5f5f5]" :class="decideTabStyle(item.tabName).value" @click="clickedTab(item.tabName)">
+        <li v-for="item in items" :key="item.tabName" class="hover:bg-[#f5f5f5]" :class="decideTabStyle(item.tabName).value" @click="clickedTab(item.tabName)">
           <RouterLink :to="item.path" class="block px-5 py-3 size-full">
             <span><font-awesome-icon :icon="item.icon" class="mr-2" /></span>
-            <span>{{ item.cn }}</span>
+            <span>{{ item.Category }}</span>
           </RouterLink>
         </li>
       </ul>

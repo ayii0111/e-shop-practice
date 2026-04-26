@@ -10,7 +10,7 @@ const items = ref([
   },
   {
     label: 'Products',
-    path: '/products/all',
+    path: '/productCategory/ProductList/all',
   },
 ])
 
@@ -50,9 +50,9 @@ const cartProductCount = ref(88)
 
 <template>
   <div>
-    <Menubar :model="items" :dt="menubarDt" class="border-0 px-0 py-2">
+    <Menubar :model="items" :dt="menubarDt" class="px-0 py-2 border-0">
       <template #start>
-        <span class="text-[20px] font-[700] h-7.5 py-3">Carol's Shop</span>
+        <span class="py-3 h-7.5 font-[700] text-[20px]">Carol's Shop</span>
       </template>
       <template #item="{ item }">
         <RouterLink :to="item.path" @click="clickedTab(item.label as string)">
@@ -60,7 +60,7 @@ const cartProductCount = ref(88)
         </RouterLink>
       </template>
       <template #end>
-        <ul class="icons flex items-center">
+        <ul class="flex items-center icons">
           <li class="p-2">
             <a href="#"><font-awesome-icon :icon="['fas', 'user']" size="lg" /></a>
           </li>
@@ -95,7 +95,7 @@ const cartProductCount = ref(88)
 
 .underline-animation {
   /* 目前只能透過將元素改為 inline-block 特性，避免底線過長（無法直接讓底線直接與內部文字長度相符） */
-  @apply relative inline-block;
+  @apply inline-block relative;
 }
 
 .underline-animation::before {
