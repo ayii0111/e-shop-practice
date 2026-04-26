@@ -49,6 +49,11 @@ const products = ref([
     isLike: ref(true),
   },
 ])
+
+const to = {
+  path: '/products/01',
+
+}
 // TODO:  標注 like
 // like 需先下載用戶 likeList 資料
 // 再與當前商品比對商品 id 後，再在商品列表項目添加 like 欄位
@@ -77,7 +82,7 @@ const products = ref([
         </div>
       </div>
       <div class="grid grid-cols-2 text-base text-center">
-        <RouterLink :to="{ path: '/' }" class="hover:bg-[--secondary-color] py-2 border-r">
+        <RouterLink :to="to" class="hover:bg-[--secondary-color] py-2 border-r">
           查看商品
         </RouterLink>
         <!-- <a href="" class="hover:bg-[--secondary-color] py-2 border-r">查看商品</a> -->

@@ -35,6 +35,7 @@ const breadcrumbItems = computed(() => {
     },
   }))
 })
+
 console.log('breadcrumbItems', breadcrumbItems.value)
 </script>
 

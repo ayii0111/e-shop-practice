@@ -27,11 +27,11 @@ const router = createRouter({
         },
       ],
     },
-    // {
-    //   path: '/cloth/product',
-    //   name: 'Home',
-    //   component: () => import('../layouts/Body/ProductDetailBody.vue'),
-    // },
+    {
+      path: '/products/:id',
+      name: 'ProductDetailBody',
+      component: () => import('../layouts/Body/ProductDetailBody.vue'),
+    },
 
   ],
 })

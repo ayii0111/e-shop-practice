@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, Galleria, InputNumber, Rating, Tag } from 'primevue'
+import { Breadcrumb, Button, Galleria, InputNumber, Rating, Tag } from 'primevue'
 import { _images } from './ProductCategory/imgServer'
 
 const value3 = ref(1)
@@ -44,10 +44,40 @@ const responsiveOptions = ref([
 ])
 
 const images = ref(_images)
+
+const productCategory = {
+  label: 'TOP',
+  to: '/productCategory/ProductList/top',
+}
+
+const route = useRoute()
+const breadcrumbItems = computed(() => {
+  // 取得當前的 route-path
+  // 格式 ['products', '01']
+  const items: string[] = route.fullPath.split('/').slice(1)
+
+  // 建構元件所需的數據格式 [ ..., { label: 'ALL', to: '/productCategory/all', disabled: true }]
+  return [{
+    label: items[1],
+    to: '',
+    disabled: () => true,
+  }]
+})
 </script>
 
 <template>
   <div>
+    <Breadcrumb :home="productCategory" :model="breadcrumbItems" class="bg-[--gray-bg] mb-4 px-4 py-3 max-sm:w-full">
+      <template #item="{ item }">
+        <RouterLink :to="item.to">
+          <span> {{ item.label }} </span>
+        </RouterLink>
+        <a class="cursor-pointer" :href="item.to"></a>
+      </template>
+      <template #separator>
+        /
+      </template>
+    </Breadcrumb>
     <div class="grid grid-cols-12 pb-16">
       <div class="col-span-7">
         <Galleria :value="images" :responsiveOptions="responsiveOptions" :numVisible="5" containerStyle="max-width: 100%;">
