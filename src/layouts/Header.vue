@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import OverlayBadge from 'primevue/overlaybadge'
-import { Button, Dialog, InputText, Menubar } from 'primevue'
+import { Menubar } from 'primevue'
+import LoginPage from '../../pages/LoginPage.vue'
 import LickList from './Header/LikeList.vue'
 
 const items = ref([
@@ -46,6 +47,7 @@ function clickedTab(tabName: string) {
 // ------------------------------ 標籤樣式(迄) ------------------------------
 
 const cartProductCount = ref(88)
+const loginVisible = ref(false)
 </script>
 
 <template>
@@ -62,7 +64,10 @@ const cartProductCount = ref(88)
       <template #end>
         <ul class="flex items-center icons">
           <li class="p-2">
-            <a href="#"><font-awesome-icon :icon="['fas', 'user']" size="lg" /></a>
+            <a role="button" tabindex="0" @click="loginVisible = true">
+              <font-awesome-icon :icon="['fas', 'user']" size="lg" />
+            </a>
+            <LoginPage v-model:visible="loginVisible" />
           </li>
           <li class="p-2">
             <LickList #="{ slotMethod }">
