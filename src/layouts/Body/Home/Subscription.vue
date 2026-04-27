@@ -41,12 +41,12 @@ const toastDt = ref({
   <div class=" px-4 py-20 md:p-20 bg-fixed bg-[url(https://images.unsplash.com/photo-1519974719765-e6559eac2575?auto=format&fit=crop&ixlib=rb-1.2.1&q=80&w=1350)]">
     <Toast :dt="toastDt" />
 
-    <div class="rounded-[10px] px-8 py-12 flex flex-col bg-[var(--secondary-color)] ">
-      <h3 class="h3 text-shadow mb-6 ">
+    <div class="flex flex-col bg-[var(--secondary-color)] px-8 py-12 rounded-[10px]">
+      <h3 class="text-shadow mb-6 h3">
         Join our mailing list for updates
       </h3>
       <InputText v-model="email" :dt="inputDt" type="text" class="mb-4" placeholder="Enter your email" />
-      <Button label="Submit" class="py-[6px] px-3 rounded text-white bg-[var(--dark-button)] border-[var(--dark-button)]" @click="submit(email)">
+      <Button label="Submit" class="bg-[var(--dark-button)] px-3 py-[6px] border-[var(--dark-button)] rounded text-white" @click="submit(email)">
         Subscribe Now
       </Button>
     </div>
@@ -57,7 +57,7 @@ const toastDt = ref({
 @font-face {
   font-family: 'Yellowtail';
   /* 載入字型檔案（需指定字體檔案類型） */
-  src: url('/src/assets/Yellowtail-Regular.ttf') format('opentype');
+  src: url('@/assets/Yellowtail-Regular.ttf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
@@ -67,6 +67,6 @@ const toastDt = ref({
 }
 
 .h3 {
-  @apply text-center text-white text-[28px] leading-[33.6px] font-[Yellowtail];
+  @apply font-[Yellowtail] text-[28px] text-white text-center leading-[33.6px];
 }
 </style>

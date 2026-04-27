@@ -37,7 +37,7 @@ const current = computed(() => {
 @font-face {
   font-family: 'Noto Sans TC';
   /* 載入字型檔案（需指定字體檔案類型） */
-  src: url('/src/assets/NotoSansTC-VariableFont_wght.ttf') format('opentype');
+  src: url('@/assets/NotoSansTC-VariableFont_wght.ttf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }

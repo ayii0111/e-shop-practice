@@ -13,21 +13,34 @@ import 'swiper/css/pagination'
 import 'swiper/css/autoplay'
 import 'swiper/css/grid'
 
+import carol1 from '@/assets/CategoryCarousel_Images/carol_1547383616723.jpg'
+import carol2 from '@/assets/CategoryCarousel_Images/carol_1547383646743.jpg'
+import carol3 from '@/assets/CategoryCarousel_Images/carol_1547383672400.jpg'
+import carol4 from '@/assets/CategoryCarousel_Images/carol_1547383712130.jpg'
+import carol5 from '@/assets/CategoryCarousel_Images/carol_1547383726339.jpg'
+import carol6 from '@/assets/CategoryCarousel_Images/carol_1547383737063.jpg'
+import carol7 from '@/assets/CategoryCarousel_Images/carol_1547383749908.jpg'
+import carol8 from '@/assets/CategoryCarousel_Images/carol_1547383760395.jpg'
+import carol9 from '@/assets/CategoryCarousel_Images/carol_1547383770961.jpg'
+import carol10 from '@/assets/CategoryCarousel_Images/carol_1547383796345.jpg'
+import carol11 from '@/assets/CategoryCarousel_Images/carol_1547383785733.jpg'
+import carol12 from '@/assets/CategoryCarousel_Images/carol_1547383824144.jpg'
+
 const modules = ref([Navigation, Pagination, Grid, Autoplay])
 
 const products = reactive([
-  { name: '商品名稱', category: '類別', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383616723.jpg' },
-  { name: '商品名稱2', category: '類別2', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383646743.jpg' },
-  { name: '商品名稱3', category: '類別3', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383672400.jpg' },
-  { name: '商品名稱4', category: '類別4', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383712130.jpg' },
-  { name: '商品名稱5', category: '類別5', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383726339.jpg' },
-  { name: '商品名稱6', category: '類別6', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383737063.jpg' },
-  { name: '商品名稱7', category: '類別7', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383749908.jpg' },
-  { name: '商品名稱8', category: '類別8', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383760395.jpg' },
-  { name: '商品名稱9', category: '類別9', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383770961.jpg' },
-  { name: '商品名稱10', category: '類別10', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383796345.jpg' },
-  { name: '商品名稱11', category: '類別11', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383785733.jpg' },
-  { name: '商品名稱12', category: '類別12', imageUrl: '/src/assets/CategoryCarousel_Images/carol_1547383824144.jpg' },
+  { name: '商品名稱', category: '類別', imageUrl: carol1 },
+  { name: '商品名稱2', category: '類別2', imageUrl: carol2 },
+  { name: '商品名稱3', category: '類別3', imageUrl: carol3 },
+  { name: '商品名稱4', category: '類別4', imageUrl: carol4 },
+  { name: '商品名稱5', category: '類別5', imageUrl: carol5 },
+  { name: '商品名稱6', category: '類別6', imageUrl: carol6 },
+  { name: '商品名稱7', category: '類別7', imageUrl: carol7 },
+  { name: '商品名稱8', category: '類別8', imageUrl: carol8 },
+  { name: '商品名稱9', category: '類別9', imageUrl: carol9 },
+  { name: '商品名稱10', category: '類別10', imageUrl: carol10 },
+  { name: '商品名稱11', category: '類別11', imageUrl: carol11 },
+  { name: '商品名稱12', category: '類別12', imageUrl: carol12 },
 ])
 
 const breakpoints = useBreakpoints(breakpointsTailwind)

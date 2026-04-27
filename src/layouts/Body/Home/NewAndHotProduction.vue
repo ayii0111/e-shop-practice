@@ -2,6 +2,9 @@
 import { Button } from 'primevue'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
+import news1 from '@/assets/NewAndHotProduction_Images/news-1.55745d13.jpg'
+import news2 from '@/assets/NewAndHotProduction_Images/news-2.f7d3b8be.jpg'
+
 const LRData = [
   {
     modelTitle: 'MODEL',
@@ -10,7 +13,7 @@ const LRData = [
     promoSubtitle: 'Popular Products',
     promoButton: 'Go Shop',
     flexColReverse: ['flex-col'],
-    imageUrl: '/src/assets/NewAndHotProduction_Images/news-1.55745d13.jpg',
+    imageUrl: news1,
     bgPosition: ['bg-bottom'],
     key: 1,
   },
@@ -21,7 +24,7 @@ const LRData = [
     promoSubtitle: 'Popular Products',
     promoButton: 'Go Shop',
     flexColReverse: ['flex-col-reverse'],
-    imageUrl: '/src/assets/NewAndHotProduction_Images/news-2.f7d3b8be.jpg',
+    imageUrl: news2,
     bgPosition: ['bg-center'],
     key: 2,
   },
@@ -41,26 +44,26 @@ function decideFlexPosition(index: number) {
 </script>
 
 <template>
-  <div class="grid grid-cols-1 md:grid-cols-2   md:gap-[30px] text-center">
-    <div v-for="item in LRBox" :key="item.key" class="flex-auto flex" :class="`${decideFlexPosition(item.key).value}`">
-      <!-- <div v-for="item in LRBox" :key="item.key" class="flex-auto flex flex-col"> -->
-      <div class="py-[160px] mb-6 bg-cover " :class="item.bgPosition" :style="{ backgroundImage: `url(${item.imageUrl})` }">
-        <h3 class="h3 text-shadow">
+  <div class="md:gap-[30px] grid grid-cols-1 md:grid-cols-2 text-center">
+    <div v-for="item in LRBox" :key="item.key" class="flex flex-auto" :class="`${decideFlexPosition(item.key).value}`">
+      <!-- <div v-for="item in LRBox" :key="item.key" class="flex flex-col flex-auto"> -->
+      <div class="bg-cover mb-6 py-[160px]" :class="item.bgPosition" :style="{ backgroundImage: `url(${item.imageUrl})` }">
+        <h3 class="text-shadow h3">
           {{ item.modelTitle }}
         </h3>
-        <h3 class="h3 text-shadow">
+        <h3 class="text-shadow h3">
           {{ item.modelName }}
         </h3>
       </div>
-      <div class="p-8 mb-6 bg-[var(--secondary-color)]">
+      <div class="bg-[var(--secondary-color)] mb-6 p-8">
         <div class="py-10 border-[2.5px] border-white">
-          <h3 class="h3 !text-[var(--primary-text-color)]">
+          <h3 class="!text-[var(--primary-text-color)] h3">
             {{ item.promoTitle }}
           </h3>
           <p class="mb-4 text-[var(--primary-text-color)]">
             {{ item.promoSubtitle }}
           </p>
-          <Button class="py-[6px] px-3 rounded text-white bg-[var(--dark-button)] border-[var(--dark-button)]">
+          <Button class="bg-[var(--dark-button)] px-3 py-[6px] border-[var(--dark-button)] rounded text-white">
             {{ item.promoButton }}
           </Button>
         </div>
@@ -73,13 +76,13 @@ function decideFlexPosition(index: number) {
 @font-face {
   font-family: 'Yellowtail';
   /* 載入字型檔案（需指定字體檔案類型） */
-  src: url('/src/assets/Yellowtail-Regular.ttf') format('opentype');
+  src: url('@/assets/Yellowtail-Regular.ttf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
 
 .h3 {
-  @apply mb-4 text-white text-[28px] leading-[33.6px] font-[Yellowtail];
+  @apply mb-4 font-[Yellowtail] text-[28px] text-white leading-[33.6px];
 }
 
 .text-shadow {
