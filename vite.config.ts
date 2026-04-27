@@ -9,6 +9,7 @@ import { PrimeVueResolver } from '@primevue/auto-import-resolver'
 import Components from 'unplugin-vue-components/vite'
 
 export default defineConfig({
+  base: '/e-shop-practice/', // 改成相對路徑
   css: {
     postcss: {
       plugins: [tailwindcss, autoprefixer],
