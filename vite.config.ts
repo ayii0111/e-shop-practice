@@ -25,7 +25,7 @@ export default defineConfig({
       // resolvers: [
       //   PrimeVueResolver(),
       // ],
-      dirs: ['src/components', 'src/views'],
+      dirs: ['src/components', 'src/views', 'src/layouts'],
       deep: true,
     }),
     AutoImport({

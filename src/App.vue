@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import Header from './layouts/Header.vue'
-import Body from './layouts/Body.vue'
-import Footer from './layouts/Footer.vue'
-
 const breakpoints = useBreakpoints({
   'sm': 640,
   'md': 768,
@@ -22,10 +18,7 @@ const current = computed(() => {
 
 <template>
   <div class="mx-auto px-2 sm:px-16 lg:px-4 max-w-[1140px] container">
-    <Header />
-
-    <Body />
-    <Footer />
+    <RouterView />
     <!-- 斷點指示器（開發用） -->
     <div class="right-4 bottom-4 z-[9999] fixed bg-black/70 px-3 py-1 rounded-full font-mono text-white text-xs">
       {{ current }}
