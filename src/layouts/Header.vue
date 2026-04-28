@@ -1,79 +1,71 @@
 <script setup lang="ts">
 import OverlayBadge from 'primevue/overlaybadge'
 import { Menubar } from 'primevue'
-import LickList from './Header/LikeList.vue'
 
-const items = ref([
-  {
-    label: 'Home',
-    path: '/',
-  },
-  {
-    label: 'Products',
-    path: '/productCategory/ProductList/all',
-  },
-])
+import { menubarProps } from './Header/menubarProps'
+import LikeList from './Header/LikeList.vue'
+import { OAuthLogin } from './Header'
 
-const menubarDt = reactive({
-  root: {
-    itemFocusBackground: 'intail',
-  },
-})
-
+// #region  購物車 數量圖標: <OverlayBadge> 元件 props ------------------------------
 const overlayBadgeDt = ref({
   root: {
     padding: '0px',
   },
 })
 
-// ------------------------------ 標籤樣式(起) ------------------------------
+const cartProductCount = ref(88)
+// #endregion
+// #region  分頁標籤 樣式控制: <Menubar> 元件的 slot ------------------------------
 // 當前頁面的標籤，實際上應該由 router 決定
 // 依賴於 router 中的 name ⭐️⭐️⭐️
-const activeTabName = ref('Home')
 
 const route = useRoute()
-
-function decideTabStyle(tabName: string) {
+function applyTabStyle(tabName: string) {
   return computed(() => {
     if (tabName === route.name) { return ['text-[var(--primary-text-color)', 'underline-animation'] }
     return ['text-[--secondary-text-color] hover:text-[--primary-text-color]']
   })
 }
-
-function clickedTab(tabName: string) {
+const activeTabName = ref('Home')
+function activateTab(tabName: string) {
   activeTabName.value = tabName
 }
-// ------------------------------ 標籤樣式(迄) ------------------------------
+// #endregion
 
-const cartProductCount = ref(88)
+// #region  頭像 第三方登入功能: 利用 Clerk 服務 ------------------------------
+
+// #endregion
 </script>
 
 <template>
   <div>
-    <Menubar :model="items" :dt="menubarDt" class="px-0 py-2 border-0">
+    <Menubar v-bind="menubarProps" class="px-0 py-2 border-0">
       <template #start>
         <span class="py-3 h-7.5 font-[700] text-[20px]">Carol's Shop</span>
       </template>
-      <template #item="{ item }">
-        <RouterLink :to="item.path" @click="clickedTab(item.label as string)">
-          <span class="flex justify-center items-center px-3 py-2" :class="decideTabStyle(item.label as string).value"> {{ item.label }}</span>
+      <template #item="{ item: tab }">
+        <RouterLink :to="tab.path" @click="activateTab(tab.label as string)">
+          <span class="flex justify-center items-center px-3 py-2" :class="applyTabStyle(tab.routeName as string).value"> {{ tab.label }}</span>
         </RouterLink>
       </template>
       <template #end>
         <ul class="flex items-center icons">
           <li class="p-2">
-            <RouterLink to="/user/">
+            <OAuthLogin #="{ props }" class="cursor-pointer">
+              <font-awesome-icon v-bind="props" :icon="['fas', 'user']" size="lg" />
+            </OAuthLogin>
+            <!-- <RouterLink to="/user/">
               <font-awesome-icon :icon="['fas', 'user']" size="lg" />
-            </RouterLink>
+            </RouterLink> -->
           </li>
           <li class="p-2">
-            <LickList #="{ slotMethod }">
-              <a role="button" tabindex="0" @click="slotMethod">
+            <LikeList #="{ toggle }">
+              <a role="button" tabindex="0" @click="toggle">
                 <OverlayBadge :dt="overlayBadgeDt" :value="cartProductCount" severity="danger" size="small">
                   <font-awesome-icon :icon="['fas', 'cart-shopping']" size="lg" />
                 </OverlayBadge>
               </a>
-            </LickList>
+            </LikeList>
           </li>
           <li class="p-2">
             <a href="#" role="button" tabindex="0"><font-awesome-icon :icon="['fas', 'heart']" size="lg" /></a>

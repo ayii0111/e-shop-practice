@@ -1,17 +1,17 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import './assets/tw.css'
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { fas } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import PrimeVue from 'primevue/config'
+import { clerkPlugin } from 'vue-clerk'
 import Aura from '@primevue/themes/aura'
-import ToastService from 'primevue/toastservice'
 import { definePreset } from '@primevue/themes'
+import ToastService from 'primevue/toastservice'
+import { fas } from '@fortawesome/free-solid-svg-icons'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+import './assets/tw.css'
 import App from './App.vue'
 import router from './router'
-import 'bootstrap-icons/font/bootstrap-icons.css' // 匯入 CSS
-import 'primeicons/primeicons.css'
 
 library.add(fas)
 
@@ -55,5 +55,7 @@ app.use(PrimeVue, {
     },
   },
 })
-
+app.use(clerkPlugin, {
+  publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+})
 app.mount('#app')

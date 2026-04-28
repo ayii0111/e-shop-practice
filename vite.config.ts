@@ -63,6 +63,7 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@icon': fileURLToPath(new URL('./src/assets/icon', import.meta.url)),
+      '@services': fileURLToPath(new URL('./src/services', import.meta.url)),
 
     },
   },

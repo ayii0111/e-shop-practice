@@ -22,6 +22,7 @@ declare module 'vue' {
     Logo: typeof import('./src/layouts/Header/Logo.vue')['default']
     Nav: typeof import('./src/layouts/Header/Nav.vue')['default']
     NewAndHotProduction: typeof import('./src/layouts/Body/Home/NewAndHotProduction.vue')['default']
+    OAuthLogin: typeof import('./src/layouts/Header/OAuthLogin.vue')['default']
     ProductCarousel: typeof import('./src/layouts/Body/Home/ProductCarousel.vue')['default']
     ProductCategoryBody: typeof import('./src/layouts/Body/ProductCategoryBody.vue')['default']
     ProductDetailBody: typeof import('./src/layouts/Body/ProductDetailBody.vue')['default']
