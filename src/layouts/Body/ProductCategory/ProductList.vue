@@ -94,7 +94,7 @@ const to = {
 
 <style scoped lang="scss">
 .icon {
-  @apply size-[16px] text-[--danger-color] text-[16px] leading-[16px];
+  @apply size-[16px] text-[16px] text-[var(--danger-color)] leading-[16px];
   @apply flex justify-center items-center;
 }
 </style>
