@@ -8,10 +8,10 @@ import ToastService from 'primevue/toastservice'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-
 import 'primeicons/primeicons.css'
-
 import './assets/tw.css'
+import axios from 'axios'
+import VueAxios from 'vue-axios'
 import App from './App.vue'
 import router from './router'
 
@@ -39,7 +39,6 @@ const preset = definePreset(Aura, {
     },
   },
 })
-
 app.use(PrimeVue, {
   // Default theme configuration
   theme: {
@@ -57,7 +56,10 @@ app.use(PrimeVue, {
     },
   },
 })
-app.use(clerkPlugin, {
-  publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-})
+// app.use(clerkPlugin, {
+//   publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+// })
+app.use(VueAxios, axios)
+app.provide('axios', app.config.globalProperties.axios)
+
 app.mount('#app')

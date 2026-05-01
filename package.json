@@ -13,6 +13,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@clerk/vue": "^2.0.18",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-brands-svg-icons": "^6.7.2",
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
@@ -21,8 +22,10 @@
     "@primeuix/themes": "^1.0.0",
     "@primevue/forms": "^4.3.2",
     "@primevue/themes": "^4.2.5",
+    "@supabase/supabase-js": "^2.105.0",
     "@vueuse/core": "^13.0.0",
     "await-to-js": "^3.0.0",
+    "axios": "^1.15.2",
     "bootstrap-icons": "^1.11.3",
     "firebase": "^12.12.1",
     "pinia": "^2.3.0",
@@ -31,6 +34,7 @@
     "swiper": "^11.2.0",
     "tailwindcss-primeui": "^0.3.4",
     "vue": "^3.5.13",
+    "vue-axios": "^3.5.2",
     "vue-clerk": "^0.10.1",
     "vue-router": "^4.5.0"
   },
@@ -38,6 +42,7 @@
     "@antfu/eslint-config": "^2.27.3",
     "@primevue/auto-import-resolver": "^4.2.5",
     "@tsconfig/node22": "^22.0.0",
+    "@types/axios": "^0.14.4",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.10.2",
     "@vitejs/plugin-vue": "^5.2.1",

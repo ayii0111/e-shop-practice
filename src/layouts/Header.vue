@@ -51,9 +51,10 @@ function activateTab(tabName: string) {
       <template #end>
         <ul class="flex items-center icons">
           <li class="p-2">
-            <OAuthLogin #="{ props }" class="cursor-pointer">
-              <font-awesome-icon v-bind="props" :icon="['fas', 'user']" size="lg" />
+            <OAuthLogin #="{ loginWithGoogle }" class="cursor-pointer">
+              <font-awesome-icon :icon="['fas', 'user']" size="lg" @click="loginWithGoogle" />
             </OAuthLogin>
+
             <!-- <RouterLink to="/user/">
               <font-awesome-icon :icon="['fas', 'user']" size="lg" />
             </RouterLink> -->

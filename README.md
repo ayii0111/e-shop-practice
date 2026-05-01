@@ -27,4 +27,4 @@ Head功能：
 - 商品類別列表功能：
 - 自動補全輸入框
 - 商品完售的遮罩
--
+- VITE_CLERK_PUBLISHABLE_KEY=pk_test_ZGVhci1tYWxhbXV0ZS0yMy5jbGVyay5hY2NvdW50cy5kZXYk

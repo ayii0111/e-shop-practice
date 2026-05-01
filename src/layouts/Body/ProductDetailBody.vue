@@ -117,7 +117,7 @@ const breadcrumbItems = computed(() => {
             原價：NT$ 2499
           </p>
           <p class="text-red-500 text-sm">
-            截至 4/24 限定價格期間限定
+            截至 4/24 限定價格
           </p>
         </div>
         <div class="flex items-center mt-4">
