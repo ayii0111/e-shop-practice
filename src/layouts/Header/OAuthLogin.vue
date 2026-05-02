@@ -91,16 +91,20 @@ async function exchangeCodeForToken() {
 }
 
 async function logout() {
-  await axios.post(
-    `${supabaseUrl}/auth/v1/logout`,
-    {},
-    { headers: { apikey: supabasePublishableKey, Authorization: `Bearer ${userStore.value.access_token}` } },
-  )
-  delete userStore.value.user
-  delete userStore.value.access_token
+  // Supabase OAuth 登出不需要呼叫 API
+  // 只需要清除本地的 token 和用戶數據即可
+  // 因為 OAuth token 是由 Google 管理的，Supabase 只是中介
+
+  // 清除本地數據
+  userStore.value.user = null
+  userStore.value.access_token = undefined
   localStorage.removeItem('sb_user')
   localStorage.removeItem('sb_access_token')
   localStorage.removeItem('sb_refresh_token')
+  sessionStorage.removeItem('pkce_code_verifier')
+
+  // 導航到首頁
+  router.push({ name: 'Home' })
 }
 onMounted(async () => {
   // 1. 先從 localStorage 還原登入狀態（處理重整的情況）
@@ -135,10 +139,18 @@ const userOptions = ref([
 
 const router = useRouter()
 watch(selectedUserOption, (newValue) => {
-  if (newValue.label === '登出') { logout() }
-  else {
-    router.push({ name: newValue.name })
+  if (!newValue) { return }
+
+  if (newValue.label === '登出') {
+    logout()
   }
+  else if (newValue.name) {
+    router.push({ name: newValue.name })
+    toggle(undefined)
+  }
+
+  // 重置選擇，避免無法重複點擊同一選項
+  selectedUserOption.value = null
 })
 const dtListbox = {
   root: {
@@ -174,7 +186,7 @@ const dtPopover = {
 
         <Popover ref="op" :dt="dtPopover">
           <div>
-            <Listbox v-model="selectedUserOption" :dt="dtListbox" :options="userOptions" optionLabel="name">
+            <Listbox v-model="selectedUserOption" :dt="dtListbox" :options="userOptions" optionLabel="label">
               <template #option="slotProps">
                 <div class="flex items-center">
                   <!-- <img :alt="slotProps.option.name" src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png" :class="`flag flag-${slotProps.option.code.toLowerCase()} mr-2`" style="width: 18px" /> -->
