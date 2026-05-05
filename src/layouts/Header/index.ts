@@ -1,3 +1,2 @@
-export * from './LikeList'
-export { default as OAuthLogin } from './OAuthLogin.vue'
+export { default as MenubarEnd } from './MenubarEnd.vue'
 export * from './menubarProps'

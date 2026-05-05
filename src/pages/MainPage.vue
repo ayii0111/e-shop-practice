@@ -5,9 +5,7 @@
 <template>
   <div>
     <Header />
-    <RouterView />
-
-    <!-- <Body /> -->
+    <RouterView data-role="Body" />
     <Footer />
   </div>
 </template>

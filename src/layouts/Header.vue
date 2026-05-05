@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import OverlayBadge from 'primevue/overlaybadge'
-import { Menubar } from 'primevue'
-
+import { Menubar, OverlayBadge } from 'primevue'
 import { menubarProps } from './Header/menubarProps'
-import LikeList from './Header/LikeList.vue'
-import { OAuthLogin } from './Header'
+import { MenubarEnd } from './Header'
 
 // #region  購物車 數量圖標: <OverlayBadge> 元件 props ------------------------------
 const overlayBadgeDt = ref({
@@ -14,7 +11,7 @@ const overlayBadgeDt = ref({
 })
 
 const cartProductCount = ref(88)
-// #endregion
+// #endregion ------------------------------
 // #region  分頁標籤 樣式控制: <Menubar> 元件的 slot ------------------------------
 // 當前頁面的標籤，實際上應該由 router 決定
 // 依賴於 router 中的 name ⭐️⭐️⭐️
@@ -30,11 +27,7 @@ const activeTabName = ref('Home')
 function activateTab(tabName: string) {
   activeTabName.value = tabName
 }
-// #endregion
-
-// #region  頭像 第三方登入功能: 利用 Clerk 服務 ------------------------------
-
-// #endregion
+// #endregion ------------------------------
 </script>
 
 <template>
@@ -49,35 +42,14 @@ function activateTab(tabName: string) {
         </RouterLink>
       </template>
       <template #end>
-        <ul class="flex items-center icons">
-          <li class="p-2">
-            <OAuthLogin #="{ loginWithGoogle }" class="cursor-pointer">
-              <font-awesome-icon :icon="['fas', 'user']" size="lg" @click="loginWithGoogle" />
-            </OAuthLogin>
-
-            <!-- <RouterLink to="/user/">
-              <font-awesome-icon :icon="['fas', 'user']" size="lg" />
-            </RouterLink> -->
-          </li>
-          <li class="p-2">
-            <LikeList #="{ toggle }">
-              <a role="button" tabindex="0" @click="toggle">
-                <OverlayBadge :dt="overlayBadgeDt" :value="cartProductCount" severity="danger" size="small">
-                  <font-awesome-icon :icon="['fas', 'cart-shopping']" size="lg" />
-                </OverlayBadge>
-              </a>
-            </LikeList>
-          </li>
-          <li class="p-2">
-            <a href="#" role="button" tabindex="0"><font-awesome-icon :icon="['fas', 'heart']" size="lg" /></a>
-          </li>
-        </ul>
+        <MenubarEnd />
       </template>
     </Menubar>
   </div>
 </template>
 
 <style lang="scss" scoped>
+/* 提供給 applyTabStyle() 方法使用 */
 @keyframes _underline-animation {
   0% {
     transform: scaleX(0);

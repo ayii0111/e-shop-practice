@@ -39,7 +39,6 @@ async function loginWithGoogle() {
 
     // 組出 Supabase OAuth 授權 URL，讓瀏覽器跳頁到 Google 登入頁
     // 要重新跳轉回來的頁面
-    // const redirectTo = encodeURIComponent(`${window.location.origin}/assignment3`)
     const redirectTo = encodeURIComponent(`${window.location.origin}${import.meta.env.BASE_URL}`)
     // 透過頁面跳轉導航到 Supabase 處理授權的端點
     window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${redirectTo}&code_challenge=${codeChallenge}&code_challenge_method=s256`
@@ -160,6 +159,7 @@ const dtListbox = {
 const dtPopover = {
   root: {
     contentPadding: 0,
+    arrowOffset: '12px',
   },
 }
 

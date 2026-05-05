@@ -56,9 +56,12 @@ const breadcrumbItems = computed(() => {
   // 格式 ['products', '01']
   const items: string[] = route.fullPath.split('/').slice(1)
 
+  // 提取路由路徑最後的字串
+  const lastSegment = items[items.length - 1] || ''
+
   // 建構元件所需的數據格式 [ ..., { label: 'ALL', to: '/productCategory/all', disabled: true }]
   return [{
-    label: items[1],
+    label: lastSegment.toUpperCase(),
     to: '',
     disabled: () => true,
   }]
