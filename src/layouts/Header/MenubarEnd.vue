@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { OverlayBadge } from 'primevue'
-import { LikeList, OAuthLogin } from './MenubarEnd'
+import { OAuthLogin } from './MenubarEnd'
 
 // #region  購物車 數量圖標: <OverlayBadge> 元件 props ------------------------------
 const overlayBadgeDt = ref({
@@ -21,16 +21,16 @@ const cartProductCount = ref(88)
       </OAuthLogin>
     </li>
     <li class="p-2">
-      <LikeList #="{ toggle }">
-        <a role="button" tabindex="0" @click="toggle">
-          <OverlayBadge :dt="overlayBadgeDt" :value="cartProductCount" severity="danger" size="small">
-            <font-awesome-icon :icon="['fas', 'cart-shopping']" size="lg" />
-          </OverlayBadge>
-        </a>
-      </LikeList>
+      <RouterLink :to="{ path: '/cart' }">
+        <OverlayBadge :dt="overlayBadgeDt" :value="cartProductCount" severity="danger" size="small">
+          <font-awesome-icon :icon="['fas', 'cart-shopping']" size="lg" />
+        </OverlayBadge>
+      </RouterLink>
     </li>
     <li class="p-2">
-      <a href="#" role="button" tabindex="0"><font-awesome-icon :icon="['fas', 'heart']" size="lg" /></a>
+      <RouterLink :to="{ path: '/productCategory/ProductList/like' }">
+        <font-awesome-icon :icon="['fas', 'heart']" size="lg" />
+      </RouterLink>
     </li>
   </ul>
 </template>

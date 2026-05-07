@@ -43,16 +43,16 @@ async function handleLogin() {
       </div>
 
       <div class="text-right">
-        <a href="#" class="text-[var(--secondary-text-color)] hover:text-[var(--primary-text-color)] text-sm">忘記密碼？</a>
+        <a href="#" class="text-[var(--third-color)] hover:text-[var(--primary-text-color)] text-sm">忘記密碼？</a>
       </div>
 
       <Button label="登入" :loading="loading" class="bg-[var(--dark-button)] py-2 border-[var(--dark-button)] rounded w-full text-white" @click="handleLogin" />
 
       <Divider align="center">
-        <span class="text-[var(--secondary-text-color)] text-xs">或</span>
+        <span class="text-[var(--third-color)] text-xs">或</span>
       </Divider>
 
-      <p class="text-[var(--secondary-text-color)] text-sm text-center">
+      <p class="text-[var(--third-color)] text-sm text-center">
         還沒有帳號？
         <a href="#" class="text-[var(--primary-text-color)] underline">立即註冊</a>
       </p>

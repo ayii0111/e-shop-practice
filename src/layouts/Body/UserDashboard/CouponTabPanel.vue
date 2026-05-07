@@ -156,7 +156,7 @@ const messagePt = {
 </script>
 
 <template>
-  <div class="p-4 coupon-panel">
+  <div class=" coupon-panel">
     <!-- 優惠券列表 -->
     <div class="space-y-4">
       <Message v-for="coupon in coupons" :key="coupon.id" :pt="messagePt" :dt="messageDt" :severity="getSeverity(coupon.status)" class="cursor-pointer coupon-card" :closable="false" @click="copyCouponCode(coupon)">
@@ -176,7 +176,7 @@ const messagePt = {
             </div>
 
             <!-- 詳細資訊 -->
-            <div class="px-2 gap-x-6 gap-y-1 grid grid-cols-1 md:grid-cols-3 text-gray-400 text-xs">
+            <div class="gap-x-6 gap-y-1 grid grid-cols-1 md:grid-cols-3 px-2 text-gray-400 text-xs">
               <!-- 使用期限：已滿足使用期限時只顯示結束時間，未滿足時顯示開始和結束時間 -->
               <div>
                 <span>使用期限：</span>
@@ -244,7 +244,7 @@ const messagePt = {
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(var(--dark-button-rgb), 0.15);
   }
 
   &:active {

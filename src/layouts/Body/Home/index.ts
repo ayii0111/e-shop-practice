@@ -1,0 +1,6 @@
+export { default as Carousel } from './Carousel.vue'
+export { default as CategoryBar } from './CategoryBar.vue'
+export { default as NewAndHotProduction } from './NewAndHotProduction.vue'
+export { default as ProductCarousel } from './ProductCarousel.vue'
+export { default as SpecialDeal } from './SpecialDeal.vue'
+export { default as Subscription } from './Subscription.vue'

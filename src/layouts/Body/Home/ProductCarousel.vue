@@ -92,7 +92,7 @@ span {
   padding: 4px;
   background-color: var(--third-color);
   color: #fff;
-  text-shadow: 1px 1px 1px #ccc;
+  text-shadow: 1px 1px 1px var(--third-color);
   line-height: 1.5;
 }
 
@@ -109,7 +109,7 @@ span {
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: rgba(52, 58, 64, 0.5);
+  background-color: rgba(var(--dark-button-rgb), 0.5);
   opacity: 0;
   transition: all 0.3s ease;
   color: #fff;

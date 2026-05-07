@@ -46,6 +46,11 @@ export default defineConfig({
           imports: ['RouteLocationRaw'],
           type: true,
         },
+        {
+          from: 'await-to-js',
+          imports: ['to'],
+          // type: true,
+        },
       ],
       defaultExportByFilename: false,
       dts: './auto-imports.d.ts',

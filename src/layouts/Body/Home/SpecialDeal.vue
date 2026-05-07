@@ -3,7 +3,7 @@ import { Button } from 'primevue'
 </script>
 
 <template>
-  <div class="p-6 flex items-center justify-between bg">
+  <div class="flex justify-between items-center p-6 bg">
     <div class="mr-2">
       <h5 class="mb-2 text-xl">
         限量 Coupon 大放送
@@ -12,7 +12,7 @@ import { Button } from 'primevue'
         Lorem ipsum dolor sit amet consectetur adipisicing elit. A, aliquid cumque iusto necessitatibus quasi tempora.
       </p>
     </div>
-    <Button class="py-1.5 px-3 w-40 btn-color">
+    <Button class="px-3 py-1.5 w-40 btn-color">
       立即領取
     </Button>
   </div>
@@ -20,12 +20,12 @@ import { Button } from 'primevue'
 
 <style scoped lang="scss">
 .bg {
-  background-color: #f8f9fa;
+  background-color: var(--gray-bg);
 }
 
 .btn-color {
   color: #fff;
-  background-color: #343a40;
-  border-color: #343a40;
+  background-color: var(--dark-button);
+  border-color: var(--dark-button);
 }
 </style>

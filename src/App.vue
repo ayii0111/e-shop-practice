@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Toast } from 'primevue'
+
 const breakpoints = useBreakpoints({
   'sm': 640,
   'md': 768,
@@ -17,8 +19,10 @@ const current = computed(() => {
 </script>
 
 <template>
+  <Toast position="top-right" /> <!-- 放在根元件即可 -->
+
   <div class="mx-auto px-2 sm:px-16 lg:px-4 max-w-[1140px] container">
-    <RouterView data-role="Page"/>
+    <RouterView data-role="Page" />
     <!-- 斷點指示器（開發用） -->
     <div class="right-4 bottom-4 z-[9999] fixed bg-black/70 px-3 py-1 rounded-full font-mono text-white text-xs">
       {{ current }}
@@ -59,7 +63,13 @@ html {
   --dark-button: #343a3f;
   --gray-icon: #6c757d;
   --gray-bg: #f8f9fa;
-  --secondary-text-color: #818181;
+  --third-color: #818181;
+
+  /* RGB 分量，供 rgba() 搭配透明度使用 */
+  --primary-text-color-rgb: 33, 37, 41;
+  --secondary-color-rgb: 230, 223, 215;
+  --dark-button-rgb: 52, 58, 63;
+  --third-color-rgb: 210, 197, 184;
 }
 
 @layer reset {

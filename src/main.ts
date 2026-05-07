@@ -14,8 +14,11 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 import App from './App.vue'
 import router from './router'
-
 library.add(fas)
+import JsonViewer from 'vue3-json-viewer'
+import 'vue3-json-viewer/dist/index.css'
+
+
 
 const app = createApp(App)
 app.use(createPinia())
@@ -61,5 +64,7 @@ app.use(PrimeVue, {
 // })
 app.use(VueAxios, axios)
 app.provide('axios', app.config.globalProperties.axios)
+app.use(JsonViewer)
+
 
 app.mount('#app')

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button, InputText, Toast, useToast } from 'primevue'
-import type { DesignToken, PassThrough } from '@primevue/core'
+// import type { DesignToken, PassThrough } from '@primevue/core'
 
 const toast = useToast()
 
@@ -20,11 +20,11 @@ function submit(email: string) {
 
 const inputDt = ref({
   root: {
-    focusBorderColor: '#6d7a86',
+    focusBorderColor: 'var(--gray-icon)',
     focusRing: {
       width: '3px',
       style: 'solid',
-      color: 'rgba(52, 58, 64, .25)',
+      color: 'rgba(var(--dark-button-rgb), .25)',
     },
     transitionDuration: '200ms',
   },
@@ -63,7 +63,7 @@ const toastDt = ref({
 }
 
 .text-shadow {
-  text-shadow: 1px 1px 1px #343a40;
+  text-shadow: 1px 1px 1px var(--dark-button);
 }
 
 .h3 {

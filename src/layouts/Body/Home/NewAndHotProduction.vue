@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from 'primevue'
+import { RouterLink } from 'vue-router'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
 import news1 from '@/assets/NewAndHotProduction_Images/news-1.55745d13.jpg'
@@ -16,6 +17,7 @@ const LRData = [
     imageUrl: news1,
     bgPosition: ['bg-bottom'],
     key: 1,
+    path: '/productCategory/ProductList/all',
   },
   {
     modelTitle: 'MODEL',
@@ -27,6 +29,8 @@ const LRData = [
     imageUrl: news2,
     bgPosition: ['bg-center'],
     key: 2,
+    path: '/productCategory/ProductList/all',
+
   },
 ] as const
 const LRBox = reactive(LRData)
@@ -63,7 +67,7 @@ function decideFlexPosition(index: number) {
           <p class="mb-4 text-[var(--primary-text-color)]">
             {{ item.promoSubtitle }}
           </p>
-          <Button class="bg-[var(--dark-button)] px-3 py-[6px] border-[var(--dark-button)] rounded text-white">
+          <Button :as="RouterLink" :to="item.path" class="bg-[var(--dark-button)] px-3 py-[6px] border-[var(--dark-button)] rounded text-white">
             {{ item.promoButton }}
           </Button>
         </div>
@@ -86,6 +90,6 @@ function decideFlexPosition(index: number) {
 }
 
 .text-shadow {
-  text-shadow: 1px 1px 1px #343a40;
+  text-shadow: 1px 1px 1px var(--dark-button);
 }
 </style>

@@ -56,7 +56,7 @@ function decideFlexPosition(index: number) {
       <SwiperSlide v-for="item in items" :key="item.index" class="">
         <div class="flex bg-[50%] bg-cover h-full" :class="`${decideFlexPosition(item.index).value}`" :style="{ backgroundImage: `url(${item.imgUrl})` }">
           <div class="flex-[1.5] m-10 border-[3px] border-[var(--secondary-color)]"></div>
-          <div class="flex flex-col flex-1 justify-center items-center bg-[rgba(230,223,215,0.9)] text-[var(--primary-text-color)]">
+          <div class="flex flex-col flex-1 justify-center items-center bg-[rgba(var(--secondary-color-rgb),0.9)] text-[var(--primary-text-color)]">
             <h3 class="mb-4 font-[500] text-[20px] leading-[24px]">
               {{ item.h3 }}
             </h3>

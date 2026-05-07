@@ -1,61 +1,46 @@
 <script setup lang="ts">
-const products = ref([
-  {
-    name: '產品標題1',
-    id: '001',
-    description: '產品描述1',
-    originalPrice: 1680,
-    salePrice: 99,
-    category: '種類1',
-    ratings: 5,
-    images: ['https://via.placeholder.com/150', 'https://via.placeholder.com/150'],
-    quantity: 10,
-    isLike: ref(false),
-  },
-  {
-    name: '產品標題2',
-    id: '002',
-    description: '產品描述2',
-    originalPrice: 1880,
-    salePrice: 99,
-    category: '種類2',
-    ratings: 4,
-    images: ['https://via.placeholder.com/150', 'https://via.placeholder.com/150'],
-    quantity: 5,
-    isLike: ref(true),
-  },
-  {
-    name: '產品標題3',
-    id: '003',
-    description: '產品描述3',
-    originalPrice: 1780,
-    salePrice: 99,
-    category: '種類3',
-    ratings: 3,
-    images: ['https://via.placeholder.com/150', 'https://via.placeholder.com/150'],
-    quantity: 15,
-    isLike: ref(false),
-  },
-  {
-    name: '產品標題4',
-    id: '004',
-    description: '產品描述4',
-    originalPrice: 1980,
-    salePrice: 99,
-    category: '種類4',
-    ratings: 2,
-    images: ['https://via.placeholder.com/150', 'https://via.placeholder.com/150'],
-    quantity: 20,
-    isLike: ref(true),
-  },
-])
+import { useToast } from 'primevue/usetoast'
+import { supabaseApi } from '@services/api'
 
-const to = {
+const toast = useToast()
+//  toast.add({
+//     severity: 'success',   // success | info | warn | error
+//     summary: '操作成功',
+//     detail: '資料已成功儲存',
+//     life: 3000             // 顯示毫秒數
+//   });
+
+// toast.removeAll();
+const category = ref()
+
+const [errorGetProductList, getProductList] = await to(supabaseApi.get(`/products?category=eq.${encodeURIComponent(category.value)}`))
+if (errorGetProductList) {
+  toast.add({
+    severity: 'error', // success | info | warn | error
+    summary: '失敗api: /products?category=eq.',
+    // detail: '資料已成功儲存',
+    life: 3000, // 顯示毫秒數
+  })
+  return
+}
+
+// 1. 引入吐司元件設計
+// 2. 吐司元件回報單純成敗結果
+// 3. 設計開發用的響應內容檢視的 json 元件
+// 4. 正式把數據串到畫面上
+
+// response.value = result.data
+// 失敗時，吐司訊息顯示失敗
+// 失敗主要訊息，輸出在控制台
+// 失敗響應，亦要輸出在一個 json 元件結構，以讓開發者快速檢視，這個設計必須要很好移除
+// 響應成功，數據放到 ref 物件中
+const products = ref()
+
+const productDetailPath = {
   path: '/products/01',
-
 }
 // TODO:  標注 like
-// like 需先下載用戶 likeList 資料
+// like 需先下載用戶 Cart 資料
 // 再與當前商品比對商品 id 後，再在商品列表項目添加 like 欄位
 </script>
 
@@ -82,7 +67,7 @@ const to = {
         </div>
       </div>
       <div class="grid grid-cols-2 text-base text-center">
-        <RouterLink :to="to" class="hover:bg-[--secondary-color] py-2 border-r">
+        <RouterLink :to="productDetailPath" class="hover:bg-[--secondary-color] py-2 border-r">
           查看商品
         </RouterLink>
         <!-- <a href="" class="hover:bg-[--secondary-color] py-2 border-r">查看商品</a> -->

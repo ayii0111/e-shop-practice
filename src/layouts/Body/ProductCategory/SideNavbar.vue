@@ -3,7 +3,7 @@ import { AutoComplete, Button, Select } from 'primevue'
 
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
-const items = reactive([
+const items = ref([
   { icon: ['fas', 'gift'], Category: '全部商品', tabName: 'all', path: '/productCategory/ProductList/all' },
   { icon: ['fas', 'shirt'], Category: '上半身', tabName: 'top', path: '/productCategory/ProductList/top' },
   { icon: ['fas', 'socks'], Category: '下半身', tabName: 'bottom', path: '/productCategory/ProductList/bottom' },
@@ -46,15 +46,6 @@ const arr = ref([]) as Ref<string[]>
 
 const selectedCategory = ref()
 
-const items_ = ref([
-  { icon: ['fas', 'gift'], Category: '全部商品', path: '/productCategory/ProductList/all' },
-  { icon: ['fas', 'shirt'], Category: '上半身', path: '/productCategory/ProductList/top' },
-  { icon: ['fas', 'socks'], Category: '下半身', path: '/productCategory/ProductList/bottom' },
-  { icon: ['fas', 'shoe-prints'], Category: '鞋', path: '/productCategory/ProductList/shoes' },
-  { icon: ['fas', 'democrat'], Category: '飾品', path: '/productCategory/ProductList/accessory' },
-  { icon: ['fas', 'shopping-bag'], Category: '配件', path: '/productCategory/ProductList/life' },
-])
-
 const router = useRouter()
 watch(selectedCategory, (newValue) => {
   router.push(newValue.path)
@@ -62,10 +53,10 @@ watch(selectedCategory, (newValue) => {
 const dt = {
   root: {
     color: '#fff',
-    background: '#e6dfd7',
-    borderColor: '#e6dfd7',
-    focusBorderColor: '#e6dfd7',
-    hoverBorderColor: '#e6dfd7',
+    background: 'var(--secondary-color)',
+    borderColor: 'var(--secondary-color)',
+    focusBorderColor: 'var(--secondary-color)',
+    hoverBorderColor: 'var(--secondary-color)',
     placeholderColor: '#fff',
   },
   dropdownColor: '#fff',
@@ -75,10 +66,10 @@ const selectPt = {
   overlay: {
     style: {
       '--p-select-option-focus-background': 'transparent',
-      '--p-select-option-focus-color': '#e6dfd7',
-      '--p-select-option-selected-background': '#e6dfd7',
-      '--p-select-option-selected-focus-background': '#e6dfd7',
-      '--p-select-option-color': '#e6dfd7',
+      '--p-select-option-focus-color': 'var(--secondary-color)',
+      '--p-select-option-selected-background': 'var(--secondary-color)',
+      '--p-select-option-selected-focus-background': 'var(--secondary-color)',
+      '--p-select-option-color': 'var(--secondary-color)',
       '--p-select-option-selected-color': '#fff',
       '--p-select-option-selected-focus-color': '#fff',
     },
@@ -92,8 +83,8 @@ const isMobile = breakpoints.smaller('md') // 自動響應的 Ref<boolean>
 <template>
   <div class="max-md:flex max-sm:flex-col-reverse max-md:items-baseline gap-2">
     <div v-if="!isMobile">
-      <ul class="mb-4 border border-[rgba(0,0,0,.125)] rounded divide-y divide-[rgba(0,0,0,.125)] text-[--secondary-text-color]">
-        <li v-for="item in items" :key="item.tabName" class="hover:bg-[#f5f5f5]" :class="decideTabStyle(item.tabName).value" @click="clickedTab(item.tabName)">
+      <ul class="mb-4 border border-[rgba(0,0,0,.125)] rounded divide-y divide-[rgba(0,0,0,.125)] text-[--third-color]">
+        <li v-for="item in items" :key="item.tabName" class="hover:bg-[var(--gray-bg)]" :class="decideTabStyle(item.tabName).value" @click="clickedTab(item.tabName)">
           <RouterLink :to="item.path" class="block px-5 py-3 size-full">
             <span><font-awesome-icon :icon="item.icon" class="mr-2" /></span>
             <span>{{ item.Category }}</span>
@@ -102,7 +93,7 @@ const isMobile = breakpoints.smaller('md') // 自動響應的 Ref<boolean>
       </ul>
     </div>
     <div v-else class="mr-4 max-sm:w-full">
-      <Select v-model="selectedCategory" :dt="dt" :pt="selectPt" :options="items_" optionLabel="name" placeholder="商品種類" class="!w-full">
+      <Select v-model="selectedCategory" :dt="dt" :pt="selectPt" :options="items" optionLabel="name" placeholder="商品種類" class="!w-full">
         <template #value="slotProps">
           <div v-if="slotProps.value" class="flex items-center px-3">
             <span><font-awesome-icon :icon="slotProps.value.icon" class="mr-2" /></span>

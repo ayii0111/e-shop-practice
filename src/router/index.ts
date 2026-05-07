@@ -1,8 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import HomeBody from '../layouts/Body/HomeBody.vue' // 靜態匯入 Home 組件
-// import ProductCategoryBody from '../layouts/Body/ProductCategoryBody.vue'
-import ProductList from '../layouts/Body/ProductCategory/ProductList.vue'
+
 import { LoginPage, MainPage } from '../pages'
+import HomeBody from '../layouts/Body/HomeBody.vue' // 靜態匯入 Home 組件
+import ProductList from '../layouts/Body/ProductCategory/ProductList.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -31,6 +31,7 @@ const router = createRouter({
               path: 'ProductList/:category',
               name: 'ProductList',
               component: ProductList,
+              meta: { scrollToTop: true },
             },
           ],
         },
@@ -39,10 +40,15 @@ const router = createRouter({
           name: 'ProductDetailBody',
           component: () => import('../layouts/Body/ProductDetailBody.vue'),
         },
+         {
+          path: 'cart',
+          name: 'CartBody',
+          component: () => import('../layouts/Body/CartBody.vue'),
+        },
         {
           path: 'dashboard/',
-          name: 'DashboardBody',
-          component: () => import('../layouts/Body/DashboardBody.vue'),
+          name: 'UserDashboardBody',
+          component: () => import('../layouts/Body/UserDashboardBody.vue'),
           // ProfileTabPanel
           // CouponTabPanel
           children: [
@@ -50,19 +56,19 @@ const router = createRouter({
               path: 'profile',
               name: 'ProfileTabPanel',
               // /Users/ayii/Projects/e-shop-practice/src/layouts/Body/Dashboard/OrderlistTabPanel.vue
-              component: () => import('../layouts/Body/Dashboard/ProfileTabPanel.vue'),
+              component: () => import('../layouts/Body/UserDashboard/ProfileTabPanel.vue'),
             },
             {
               path: 'coupon',
               name: 'CouponTabPanel',
               // /Users/ayii/Projects/e-shop-practice/src/layouts/Body/Dashboard/OrderlistTabPanel.vue
-              component: () => import('../layouts/Body/Dashboard/CouponTabPanel.vue'),
+              component: () => import('../layouts/Body/UserDashboard/CouponTabPanel.vue'),
             },
             {
               path: 'orderlist',
               name: 'OrderlistTabPanel',
               // /Users/ayii/Projects/e-shop-practice/src/layouts/Body/Dashboard/OrderlistTabPanel.vue
-              component: () => import('../layouts/Body/Dashboard/OrderlistTabPanel.vue'),
+              component: () => import('../layouts/Body/UserDashboard/OrderlistTabPanel.vue'),
             },
           ],
         },
@@ -70,6 +76,13 @@ const router = createRouter({
     },
 
   ],
+  scrollBehavior (to, from, savedPosition) {
+    if (to.meta.scrollToTop) {
+      return { top: 0 } // 代表回到最頂端 (模擬「頁面跳轉」效果)
+    }
+    // 不加 return 或 return false 就會保持原本的滾動位置
+    return false
+  },
 })
 
 export default router

@@ -18,7 +18,7 @@
 Head功能：
 
 - 購物車
-- LikeList
+- Cart
 - 首頁功能：
 - 商品數據建立
   - 細節：五種 Category 都約 10 件

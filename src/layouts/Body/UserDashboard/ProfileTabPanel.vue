@@ -248,11 +248,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-4 profile-panel">
+  <div class=" profile-panel">
     <Card>
       <!-- 頭部：頭像和基本資訊 -->
       <template #header>
-        <div class="flex items-center gap-6 bg-gradient-to-r from-blue-50 to-purple-50 p-6">
+        <!-- <div class="flex items-center gap-6 bg-gradient-to-r from-blue-50 to-purple-50 p-6"> -->
+        <div class="flex items-center gap-6 bg-gray-100 p-6">
           <Avatar :image="userProfile.avatar_url" size="xlarge" shape="circle" class="shadow-lg border-4 border-white" />
           <div class="flex-1">
             <h2 class="mb-2 font-bold text-2xl">
@@ -268,12 +269,12 @@ onMounted(() => {
                 {{ getMemberLevelText(userProfile.member_level) }}
               </span>
               <span class="text-gray-500 text-sm">
-                加入時間：{{ formatDate(userProfile.member_since) }}
+                加入時間：{{ formatDate(userProfile.member_since!) }}
               </span>
             </div>
           </div>
           <div class="text-right">
-            <Button v-if="!isEditing" label="編輯資料" icon="pi pi-pencil" @click="isEditing = true" />
+            <Button v-if="!isEditing" class="" label="編輯資料" icon="pi pi-pencil" @click="isEditing = true" />
             <div v-else class="flex gap-2">
               <Button label="儲存" icon="pi pi-check" :loading="loading" @click="updateUserProfile" />
               <Button label="取消" icon="pi pi-times" severity="secondary" outlined @click="cancelEdit" />
@@ -296,7 +297,7 @@ onMounted(() => {
               <div class="flex flex-col gap-2">
                 <label class="font-medium text-gray-600 text-sm">姓名</label>
                 <InputText v-if="isEditing" v-model="userProfile.full_name" placeholder="請輸入姓名" />
-                <p v-else class="bg-gray-50 p-3 rounded">
+                <p v-else class="bg-gray-100 p-3 rounded">
                   {{ userProfile.full_name || '未設定' }}
                 </p>
               </div>
@@ -304,6 +305,8 @@ onMounted(() => {
               <!-- Email（不可編輯） -->
               <div class="flex flex-col gap-2">
                 <label class="font-medium text-gray-600 text-sm">電子郵件</label>
+                <InputText v-if="isEditing" v-model="userProfile.email" placeholder="" />
+
                 <p class="bg-gray-100 p-3 rounded text-gray-500">
                   {{ userProfile.email }}
                 </p>
@@ -313,7 +316,7 @@ onMounted(() => {
               <div class="flex flex-col gap-2">
                 <label class="font-medium text-gray-600 text-sm">手機號碼</label>
                 <InputMask v-if="isEditing" v-model="userProfile.phone" mask="0999-999-999" placeholder="0912-345-678" />
-                <p v-else class="bg-gray-50 p-3 rounded">
+                <p v-else class="bg-gray-100 p-3 rounded">
                   {{ userProfile.phone || '未設定' }}
                 </p>
               </div>
@@ -322,7 +325,7 @@ onMounted(() => {
               <div class="flex flex-col gap-2">
                 <label class="font-medium text-gray-600 text-sm">生日</label>
                 <InputText v-if="isEditing" v-model="userProfile.birthday" type="date" />
-                <p v-else class="bg-gray-50 p-3 rounded">
+                <p v-else class="bg-gray-100 p-3 rounded">
                   {{ userProfile.birthday ? formatDate(userProfile.birthday) : '未設定' }}
                 </p>
               </div>
@@ -344,7 +347,7 @@ onMounted(() => {
                     其他
                   </option>
                 </select>
-                <p v-else class="bg-gray-50 p-3 rounded">
+                <p v-else class="bg-gray-100 p-3 rounded">
                   {{ getGenderText(userProfile.gender) }}
                 </p>
               </div>
@@ -364,7 +367,7 @@ onMounted(() => {
               <div class="flex flex-col gap-2">
                 <label class="font-medium text-gray-600 text-sm">城市</label>
                 <InputText v-if="isEditing" v-model="userProfile.city" placeholder="例如：台北市" />
-                <p v-else class="bg-gray-50 p-3 rounded">
+                <p v-else class="bg-gray-100 p-3 rounded">
                   {{ userProfile.city || '未設定' }}
                 </p>
               </div>
@@ -373,7 +376,7 @@ onMounted(() => {
               <div class="flex flex-col gap-2">
                 <label class="font-medium text-gray-600 text-sm">郵遞區號</label>
                 <InputText v-if="isEditing" v-model="userProfile.postal_code" placeholder="例如：100" />
-                <p v-else class="bg-gray-50 p-3 rounded">
+                <p v-else class="bg-gray-100 p-3 rounded">
                   {{ userProfile.postal_code || '未設定' }}
                 </p>
               </div>
@@ -382,7 +385,7 @@ onMounted(() => {
               <div class="flex flex-col gap-2 md:col-span-2">
                 <label class="font-medium text-gray-600 text-sm">詳細地址</label>
                 <Textarea v-if="isEditing" v-model="userProfile.address" rows="3" placeholder="請輸入詳細地址" />
-                <p v-else class="bg-gray-50 p-3 rounded min-h-[80px]">
+                <p v-else class="bg-gray-100 p-3 rounded min-h-[80px]">
                   {{ userProfile.address || '未設定' }}
                 </p>
               </div>
@@ -392,7 +395,7 @@ onMounted(() => {
           <Divider />
 
           <!-- 會員統計區塊 -->
-          <div>
+          <!-- <div>
             <h3 class="flex items-center gap-2 mb-4 font-semibold text-gray-700 text-lg">
               <font-awesome-icon :icon="['fas', 'chart-line']" />
               會員統計
@@ -423,15 +426,15 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <!-- 提示訊息 -->
-          <Message v-if="!isEditing" severity="info" :closable="false">
+          <!-- <Message v-if="!isEditing" severity="info" :closable="false">
             <template #icon>
               <font-awesome-icon :icon="['fas', 'circle-info']" />
             </template>
-            點擊「編輯資料」按鈕可以更新您的個人資料
-          </Message>
+點擊「編輯資料」按鈕可以更新您的個人資料
+</Message> -->
         </div>
       </template>
     </Card>

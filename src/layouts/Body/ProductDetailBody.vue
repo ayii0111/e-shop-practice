@@ -6,7 +6,7 @@ const value3 = ref(1)
 const inputNumberDT = ref({
   root: {
     buttonWidth: '30px',
-    buttonHoverBackground: 'rgba(52, 58, 64, .1)',
+    buttonHoverBackground: 'rgba(var(--dark-button-rgb), .1)',
   },
 })
 const inputNumberPT = ref({

@@ -305,7 +305,7 @@ function requestRefund(order: Order) {
 </script>
 
 <template>
-  <div class="order-panel p-4">
+  <div class="order-panel">
     <!-- 狀態篩選標籤 -->
     <div class="flex flex-wrap gap-2 mb-6">
       <Button v-for="option in statusOptions" :key="option.value" :label="option.label" :severity="selectedStatus === option.value ? 'primary' : 'secondary'" :outlined="selectedStatus !== option.value" size="small" @click="selectedStatus = option.value as any">
@@ -487,13 +487,13 @@ function requestRefund(order: Order) {
 :deep(.order-accordion) {
   .p-accordionpanel {
     margin-bottom: 1rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--secondary-color);
     border-radius: 0.5rem;
     overflow: hidden;
     transition: all 0.2s;
 
     &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px rgba(var(--dark-button-rgb), 0.08);
     }
   }
 

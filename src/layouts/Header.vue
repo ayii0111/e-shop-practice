@@ -20,7 +20,7 @@ const route = useRoute()
 function applyTabStyle(tabName: string) {
   return computed(() => {
     if (tabName === route.name) { return ['text-[var(--primary-text-color)', 'underline-animation'] }
-    return ['text-[--secondary-text-color] hover:text-[--primary-text-color]']
+    return ['text-[--third-color] hover:text-[--primary-text-color]']
   })
 }
 const activeTabName = ref('Home')
@@ -72,7 +72,7 @@ function activateTab(tabName: string) {
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #111;
+  background-color: var(--primary-text-color);
   transform: scaleX(0);
   transform-origin: center;
   animation: _underline-animation 0.3s forwards;
