@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Toast } from 'primevue'
+import { storeToRefs } from 'pinia'
 import { useJsonViewStore } from '@stores/useJsonViewStore'
 
 const breakpoints = useBreakpoints({
@@ -18,7 +19,12 @@ const current = computed(() => {
   return 'xs'
 })
 
-const { data } = useJsonViewStore()
+const store = useJsonViewStore()
+const { data } = storeToRefs(store)
+
+watch(data, (nv) => {
+  console.log('nv', nv)
+})
 </script>
 
 <template>
@@ -31,7 +37,9 @@ const { data } = useJsonViewStore()
       {{ current }}
     </div>
   </div>
-  <JSONView v-if="data" rootKey="頂層名稱" noBorder :data="data" />
+  <div v-if="Object.keys(data).length > 0">
+    <JSONView rootKey="resp" noBorder :data="data" />
+  </div>
 </template>
 
 <style>

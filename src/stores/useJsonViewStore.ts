@@ -4,10 +4,10 @@ import { defineStore } from 'pinia'
 export const useJsonViewStore = defineStore('JsonView', () => {
   const data = ref({})
 
-  function dataInject (data: any) {
-    data.value = data
+  function dataInject(_data: any) {
+    data.value = _data
   }
-  function dataReset () {
+  function dataReset() {
     data.value = {}
   }
 
