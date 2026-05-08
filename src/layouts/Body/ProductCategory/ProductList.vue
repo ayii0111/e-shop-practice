@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { useToast } from 'primevue/usetoast'
+import { Image } from 'primevue'
+import { useJsonViewStore } from '@stores/useJsonViewStore'
 import { supabaseApi } from '@services/api'
+import type { Product } from '@services/type'
 
+const { dataInject } = useJsonViewStore()
 const toast = useToast()
+// toast 便利貼
 //  toast.add({
 //     severity: 'success',   // success | info | warn | error
 //     summary: '操作成功',
@@ -11,59 +16,62 @@ const toast = useToast()
 //   });
 
 // toast.removeAll();
-const category = ref()
 
-const [errorGetProductList, getProductList] = await to(supabaseApi.get(`/products?category=eq.${encodeURIComponent(category.value)}`))
-if (errorGetProductList) {
-  toast.add({
-    severity: 'error', // success | info | warn | error
-    summary: '失敗api: /products?category=eq.',
-    // detail: '資料已成功儲存',
-    life: 3000, // 顯示毫秒數
-  })
-  return
-}
-
-// 1. 引入吐司元件設計
-// 2. 吐司元件回報單純成敗結果
-// 3. 設計開發用的響應內容檢視的 json 元件
-// 4. 正式把數據串到畫面上
-
-// response.value = result.data
-// 失敗時，吐司訊息顯示失敗
-// 失敗主要訊息，輸出在控制台
-// 失敗響應，亦要輸出在一個 json 元件結構，以讓開發者快速檢視，這個設計必須要很好移除
-// 響應成功，數據放到 ref 物件中
-const products = ref()
-
+const route = useRoute()
+// const category = ref(route.params.category) as Ref<string>
+const products = ref({}) as Ref<Product[]>
 const productDetailPath = {
   path: '/products/01',
 }
-// TODO:  標注 like
-// like 需先下載用戶 Cart 資料
-// 再與當前商品比對商品 id 後，再在商品列表項目添加 like 欄位
+
+// 吐司元件回報單純成敗結果
+// JSONView 則顯示錯誤資訊協助除錯
+watch(() => route.params.category as string, async (newCategory) => {
+  console.log('newCategory', newCategory)
+  const [errorProductList, productList] = await to(supabaseApi.get(`/products?category=eq.${encodeURIComponent(newCategory)}`))
+  console.log('errorProductListv', errorProductList)
+  console.log('productList', productList)
+  if (errorProductList) {
+    toast.add({
+      severity: 'error', // success | info | warn | error
+      summary: '失敗api: /products?category=eq.',
+      // detail: '資料已成功儲存',
+      life: 3000, // 顯示毫秒數
+    })
+    dataInject(errorProductList)
+    return
+  }
+  products.value = productList.data as any
+}, { immediate: true })
+const imagePt = {
+  image: { class: 'w-full h-full object-cover' },
+
+}
 </script>
 
 <template>
   <div class="flex flex-col items-center gap-x-[22px] gap-y-[14px] sm:grid sm:grid-cols-2 lg:grid-cols-3 auto-rows-min">
-    <div v-for="item in products" :key="item.id" class="border border-[--secondary-color] rounded max-sm:w-[291px] sm:max-w-[291px] min-h-[200px]">
+    <div v-for="item in products" :key="item.product_id" class="border border-[--secondary-color] rounded max-sm:w-[291px] sm:max-w-[291px] min-h-[200px]">
       <div src="" alt="" class="relative border-b h-[200px]">
-        <div class="top-2 right-2 z-0 absolute size-[20px]">
+        <Image :pt="imagePt" :src="item.img_urls[0]" alt="Image" width="250" />
+        <!-- <img href="item.imgUrls[0]"> -->
+        <!-- like 標記先不使用 -->
+        <!-- <div class="top-2 right-2 z-0 absolute size-[20px]">
           <a v-if="item.isLike" href="" class="flex justify-center items-center w-full h-full">
             <i class="pi pi-heart-fill icon"></i>
           </a>
           <a v-else href="" class="flex justify-center items-center w-full h-full">
             <i class="pi pi-heart icon"></i>
           </a>
-        </div>
+        </div> -->
       </div>
       <div class="px-5 py-2 border-b">
         <h5 class="font-medium text-xl">
           {{ item.name }}
         </h5>
         <div class="flex justify-between items-center">
-          <span class="font-normal text-[--gray-icon] text-sm line-through">${{ item.originalPrice }}</span>
-          <span class="font-medium text-[--danger-color] text-xl">NT ${{ item.salePrice }}</span>
+          <span class="font-normal text-[--gray-icon] text-sm line-through">${{ item.original_price }}</span>
+          <span class="font-medium text-[--danger-color] text-xl">NT ${{ item.sale_price }}</span>
         </div>
       </div>
       <div class="grid grid-cols-2 text-base text-center">

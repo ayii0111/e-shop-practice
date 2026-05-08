@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Toast } from 'primevue'
+import { useJsonViewStore } from '@stores/useJsonViewStore'
 
 const breakpoints = useBreakpoints({
   'sm': 640,
@@ -16,6 +17,8 @@ const current = computed(() => {
   if (breakpoints.sm.value) { return 'sm' }
   return 'xs'
 })
+
+const { data } = useJsonViewStore()
 </script>
 
 <template>
@@ -28,6 +31,7 @@ const current = computed(() => {
       {{ current }}
     </div>
   </div>
+  <JSONView v-if="data" rootKey="頂層名稱" noBorder :data="data" />
 </template>
 
 <style>
