@@ -7,7 +7,6 @@ export default antfu(
     formatters: {
       css: true,
       html: true,
-      markdown: 'prettier',
     },
     settings: {
       'import-x/resolver': {

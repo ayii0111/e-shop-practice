@@ -2,7 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 import { LoginPage, MainPage } from '../pages'
 import HomeBody from '../layouts/Body/HomeBody.vue' // 靜態匯入 Home 組件
-import ProductList from '../layouts/Body/ProductCategory/ProductList.vue'
+import ProductList from '../layouts/Body/ProductDisplay/ProductList.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -24,12 +24,12 @@ const router = createRouter({
           component: HomeBody,
         },
         {
-          path: 'productCategory',
-          component: () => import('../layouts/Body/ProductCategoryBody.vue'),
+          path: 'products-display-body',
+          component: () => import('../layouts/Body/ProductsDisplayBody.vue'),
           children: [
             {
-              path: 'ProductList/:category',
-              name: 'ProductList',
+              path: 'product-list/:productList',
+              name: 'product-list',
               component: ProductList,
               meta: { scrollToTop: true },
             },
@@ -40,7 +40,7 @@ const router = createRouter({
           name: 'ProductDetailBody',
           component: () => import('../layouts/Body/ProductDetailBody.vue'),
         },
-         {
+        {
           path: 'cart',
           name: 'CartBody',
           component: () => import('../layouts/Body/CartBody.vue'),

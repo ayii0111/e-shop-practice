@@ -21,14 +21,13 @@ const current = computed(() => {
 
 const store = useJsonViewStore()
 const { data } = storeToRefs(store)
-
-watch(data, (nv) => {
-  console.log('nv', nv)
-})
+// const isShow = !(Object.keys(data).length > 0)
+const isShow = false
+// #456990
 </script>
 
 <template>
-  <Toast position="top-right" /> <!-- 放在根元件即可 -->
+  <Toast position="top-right" /><!-- 放在根元件即可 -->
 
   <div class="mx-auto px-2 sm:px-16 lg:px-4 max-w-[1140px] container">
     <RouterView data-role="Page" />
@@ -37,9 +36,8 @@ watch(data, (nv) => {
       {{ current }}
     </div>
   </div>
-  <div v-if="Object.keys(data).length > 0">
-    <JSONView rootKey="resp" noBorder :data="data" />
-  </div>
+
+  <JSONView v-if="isShow" rootKey="resp" noBorder :data="data" />
 </template>
 
 <style>

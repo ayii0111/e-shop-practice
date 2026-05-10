@@ -11,6 +11,9 @@
       ],
       "@stores/*": [
         "./src/stores/*"
+      ],
+      "@services": [
+        "./src/services/index.ts"
       ]
     }
   },

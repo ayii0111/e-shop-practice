@@ -1,12 +1,12 @@
 import { URL, fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
-import AutoImport from 'unplugin-auto-import/vite'
 import tailwindcss from 'tailwindcss'
 import autoprefixer from 'autoprefixer'
-import { PrimeVueResolver } from '@primevue/auto-import-resolver'
+import vueDevTools from 'vite-plugin-vue-devtools'
+import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
+import { PrimeVueResolver } from '@primevue/auto-import-resolver'
 
 export default defineConfig({
   base: '/e-shop-practice/', // 改成相對路徑

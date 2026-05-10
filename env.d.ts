@@ -7,4 +7,4 @@ declare module '*.vue' {
   export default componentOptions
 }
 
-// const to: typeof import('await-to-js')['to']
+declare module 'vue-json-component-vue-3'

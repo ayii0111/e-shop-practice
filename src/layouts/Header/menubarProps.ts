@@ -6,8 +6,8 @@ const items = [
   },
   {
     label: 'Products',
-    path: '/productCategory/ProductList/all',
-    routeName: 'ProductList',
+    path: '/products-display-body/product-list/all',
+    routeName: 'product-list',
   },
 ]
 

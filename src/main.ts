@@ -1,29 +1,33 @@
+import axios from 'axios'
 import { createApp } from 'vue'
+import VueAxios from 'vue-axios'
+import 'primeicons/primeicons.css'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import { clerkPlugin } from 'vue-clerk'
 import Aura from '@primevue/themes/aura'
+
+import 'vue-json-component-vue-3/dist/style.css'
+import { JSONView } from 'vue-json-component-vue-3'
+
 import { definePreset } from '@primevue/themes'
 import ToastService from 'primevue/toastservice'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import 'primeicons/primeicons.css'
+
 import './assets/tw.css'
-import axios from 'axios'
-import VueAxios from 'vue-axios'
 import App from './App.vue'
 import router from './router'
+
 library.add(fas)
-import JsonViewer from 'vue3-json-viewer'
-import 'vue3-json-viewer/dist/index.css'
-
-
 
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.component('FontAwesomeIcon', FontAwesomeIcon)
+app.component('JSONView', JSONView)
+
 app.use(ToastService)
 const preset = definePreset(Aura, {
   semantic: {
@@ -64,7 +68,5 @@ app.use(PrimeVue, {
 // })
 app.use(VueAxios, axios)
 app.provide('axios', app.config.globalProperties.axios)
-app.use(JsonViewer)
-
 
 app.mount('#app')

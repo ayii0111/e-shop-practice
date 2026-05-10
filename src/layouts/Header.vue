@@ -1,18 +1,9 @@
 <script setup lang="ts">
-import { Menubar, OverlayBadge } from 'primevue'
+import { Menubar } from 'primevue'
 import { menubarProps } from './Header/menubarProps'
 import { MenubarEnd } from './Header'
 
-// #region  購物車 數量圖標: <OverlayBadge> 元件 props ------------------------------
-const overlayBadgeDt = ref({
-  root: {
-    padding: '0px',
-  },
-})
-
-const cartProductCount = ref(88)
-// #endregion ------------------------------
-// #region  分頁標籤 樣式控制: <Menubar> 元件的 slot ------------------------------
+// #region  分頁標籤 樣式控制的功能: 嵌於 <Menubar> 元件的 slot ------------------------------
 // 當前頁面的標籤，實際上應該由 router 決定
 // 依賴於 router 中的 name ⭐️⭐️⭐️
 

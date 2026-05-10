@@ -189,7 +189,6 @@ const dtPopover = {
             <Listbox v-model="selectedUserOption" :dt="dtListbox" :options="userOptions" optionLabel="label">
               <template #option="slotProps">
                 <div class="flex items-center">
-                  <!-- <img :alt="slotProps.option.name" src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png" :class="`flag flag-${slotProps.option.code.toLowerCase()} mr-2`" style="width: 18px" /> -->
                   <span><font-awesome-icon :icon="slotProps.option.icon" class="mr-2" /></span>
 
                   <div>{{ slotProps.option.label }}</div>

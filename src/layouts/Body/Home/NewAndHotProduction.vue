@@ -17,7 +17,7 @@ const LRData = [
     imageUrl: news1,
     bgPosition: ['bg-bottom'],
     key: 1,
-    path: '/productCategory/ProductList/all',
+    path: '/products-display-body/product-list/all',
   },
   {
     modelTitle: 'MODEL',
@@ -29,7 +29,7 @@ const LRData = [
     imageUrl: news2,
     bgPosition: ['bg-center'],
     key: 2,
-    path: '/productCategory/ProductList/all',
+    path: '/products-display-body/product-list/all',
 
   },
 ] as const

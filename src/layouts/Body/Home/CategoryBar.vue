@@ -2,12 +2,12 @@
 import { RouterLink } from 'vue-router'
 
 const items = ref([
-  { icon: ['fas', 'gift'], category_cn: '全部商品', category_en: 'ALL', tabName: 'all', path: '/productCategory/ProductList/all' },
-  { icon: ['fas', 'shirt'], category_cn: '上半身', category_en: 'TOP', tabName: 'top', path: '/productCategory/ProductList/top' },
-  { icon: ['fas', 'socks'], category_cn: '下半身', category_en: 'BOTTOM', tabName: 'bottom', path: '/productCategory/ProductList/bottom' },
-  { icon: ['fas', 'shoe-prints'], category_cn: '鞋', category_en: 'SHOES', tabName: 'shoes', path: '/productCategory/ProductList/shoes' },
-  { icon: ['fas', 'democrat'], category_cn: '飾品', category_en: 'ACCESSORY', tabName: 'accessory', path: '/productCategory/ProductList/accessory' },
-  { icon: ['fas', 'shopping-bag'], category_cn: '配件', category_en: 'LIFE', tabName: 'life', path: '/productCategory/ProductList/life' },
+  { icon: ['fas', 'gift'], category_cn: '全部商品', category_en: 'ALL', tabName: 'all', path: '/products-display-body/product-list/all' },
+  { icon: ['fas', 'shirt'], category_cn: '上半身', category_en: 'TOP', tabName: 'top', path: '/products-display-body/product-list/top' },
+  { icon: ['fas', 'socks'], category_cn: '下半身', category_en: 'BOTTOM', tabName: 'bottom', path: '/products-display-body/product-list/bottom' },
+  { icon: ['fas', 'shoe-prints'], category_cn: '鞋', category_en: 'SHOES', tabName: 'shoes', path: '/products-display-body/product-list/shoes' },
+  { icon: ['fas', 'democrat'], category_cn: '飾品', category_en: 'ACCESSORY', tabName: 'accessory', path: '/products-display-body/product-list/accessory' },
+  { icon: ['fas', 'shopping-bag'], category_cn: '配件', category_en: 'LIFE', tabName: 'life', path: '/products-display-body/product-list/life' },
 ])
 
 function borderPosition(index: number) {

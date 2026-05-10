@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Breadcrumb, Button, Galleria, InputNumber, Rating, Tag } from 'primevue'
-import { _images } from './ProductCategory/imgServer'
+import { _images } from './ProductDisplay/imgServer'
 
 const value3 = ref(1)
 const inputNumberDT = ref({
@@ -47,7 +47,7 @@ const images = ref(_images)
 
 const productCategory = {
   label: 'TOP',
-  to: '/productCategory/ProductList/top',
+  to: '/products-display-body/product-list/top',
 }
 
 const route = useRoute()
@@ -59,7 +59,7 @@ const breadcrumbItems = computed(() => {
   // 提取路由路徑最後的字串
   const lastSegment = items[items.length - 1] || ''
 
-  // 建構元件所需的數據格式 [ ..., { label: 'ALL', to: '/productCategory/all', disabled: true }]
+  // 建構元件所需的數據格式 [ ..., { label: 'ALL', to: '/products-display-body/all', disabled: true }]
   return [{
     label: lastSegment.toUpperCase(),
     to: '',

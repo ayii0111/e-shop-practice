@@ -83,9 +83,6 @@ importers:
       vue-router:
         specifier: ^4.5.0
         version: 4.6.4(vue@3.5.33(typescript@5.6.3))
-      vue3-json-viewer:
-        specifier: ^2.4.1
-        version: 2.4.1(vue@3.5.33(typescript@5.6.3))
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^2.27.3
@@ -171,6 +168,9 @@ importers:
       vitest:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.19.17)(jsdom@25.0.1)(sass@1.99.0)
+      vue-json-component-vue-3:
+        specifier: ^1.7.6
+        version: 1.7.6(typescript@5.6.3)
       vue-tsc:
         specifier: ^2.1.10
         version: 2.2.12(typescript@5.6.3)
@@ -4034,6 +4034,9 @@ packages:
     peerDependencies:
       eslint: '>=6.0.0'
 
+  vue-json-component-vue-3@1.7.6:
+    resolution: {integrity: sha512-DanoakJzze523KW8B3TmDG95LqDOBP6xQ+ODQ90+z/CIpdQ1NHOp5wTb2pdqiq/BJ4NtvuVecVQXkgUTRp3AbA==}
+
   vue-router@4.6.4:
     resolution: {integrity: sha512-Hz9q5sa33Yhduglwz6g9skT8OBPii+4bFn88w6J+J4MfEo4KRRpmiNG/hHHkdbRFlLBOqxN8y8gf2Fb0MTUgVg==}
     peerDependencies:
@@ -4044,11 +4047,6 @@ packages:
     hasBin: true
     peerDependencies:
       typescript: '>=5.0.0'
-
-  vue3-json-viewer@2.4.1:
-    resolution: {integrity: sha512-Z1sunvS58lJ3ZcpNhl3jYQapBVw2wjnXbemigfMWm3QnjCeg3CPMq8R6pxHUYahxMfPKLvrbGve6mUXqhWyLaQ==}
-    peerDependencies:
-      vue: ^3.5.16
 
   vue@3.5.33:
     resolution: {integrity: sha512-1AgChhx5w3ALgT4oK3acm2Es/7jyZhWSVUfs3rOBlGQC0rjEDkS7G4lWlJJGGNQD+BV3reCwbQrOe1mPNwKHBQ==}
@@ -8162,6 +8160,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  vue-json-component-vue-3@1.7.6(typescript@5.6.3):
+    dependencies:
+      vue: 3.5.33(typescript@5.6.3)
+    transitivePeerDependencies:
+      - typescript
+
   vue-router@4.6.4(vue@3.5.33(typescript@5.6.3)):
     dependencies:
       '@vue/devtools-api': 6.6.4
@@ -8172,11 +8176,6 @@ snapshots:
       '@volar/typescript': 2.4.15
       '@vue/language-core': 2.2.12(typescript@5.6.3)
       typescript: 5.6.3
-
-  vue3-json-viewer@2.4.1(vue@3.5.33(typescript@5.6.3)):
-    dependencies:
-      clipboard: 2.0.11
-      vue: 3.5.33(typescript@5.6.3)
 
   vue@3.5.33(typescript@5.6.3):
     dependencies:

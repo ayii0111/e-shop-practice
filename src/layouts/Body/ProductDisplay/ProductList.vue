@@ -1,27 +1,6 @@
 <script setup lang="ts">
-import { useToast } from 'primevue/usetoast'
 import { Image, Paginator, Skeleton } from 'primevue'
-import { useJsonViewStore } from '@stores/useJsonViewStore'
-import { supabaseApi } from '@services/api'
-import type { Product } from '@services/type'
-
-const { dataInject } = useJsonViewStore()
-const toast = useToast()
-// toast 便利貼
-//  toast.add({
-//     severity: 'success',   // success | info | warn | error
-//     summary: '操作成功',
-//     detail: '資料已成功儲存',
-//     life: 3000             // 顯示毫秒數
-//   });
-
-// toast.removeAll();
-
-const route = useRoute()
-const products = ref({}) as Ref<Product[]>
-const loading = ref(false)
-let total = 0
-const offset = ref(0)
+import { useProductList } from '../ProductDisplay'
 
 const productDetailPath = {
   path: '/products/01',
@@ -29,36 +8,11 @@ const productDetailPath = {
 
 // 吐司元件回報單純成敗結果
 // JSONView 則顯示錯誤資訊協助除錯
-watch([() => route.params.category as string, offset], async ([newCategory, newOffset]) => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-
-  loading.value = true
-  // let productPath = `/products?category=eq.${encodeURIComponent(newCategory)}&limit=12&offset=${newOffset}`
-  let categoryPath = `category=eq.${encodeURIComponent(newCategory)}&`
-
-  if (newCategory === 'all') { categoryPath = '' }
-
-  const headers = { Prefer: 'count=exact' }
-  const [respError, resp] = await to(supabaseApi.get(`/products?${categoryPath}limit=12&offset=${newOffset}`, { headers }))
-  if (respError) {
-    toast.add({
-      severity: 'error', // success | info | warn | error
-      summary: `HTTP 錯誤`,
-      detail: `message: ${respError.message}
-      context: /products?category=eq`,
-      // life: 5000, // 顯示毫秒數
-    })
-    dataInject(respError)
-    loading.value = false
-    return
-  }
-  products.value = resp.data as any
-  const contentRange = resp.headers['content-range']
-  // 回應 header 格式：Content - Range: 0 - 11 / 47
-  total = Number(contentRange.split('/')[1])
-
-  loading.value = false
-}, { immediate: true })
+// 由路由啟動該元件，call api 取得商品數據
+// 輸入類別，去取得特定類別商品列表
+// 輸入搜尋關鍵字，去取得商品名稱匹配
+// 輸入 like 路由，去取得用戶like列表，並批次取得商品數據
+const { products, loading, total, offset } = useProductList()
 
 const imagePt = {
   image: { class: 'w-full h-full object-cover' },
@@ -120,7 +74,7 @@ const imagePt = {
             <a href="" class="hover:bg-[--secondary-color] py-2">加到購物車</a>
           </div>
         </div>
-      </template>d
+      </template>
     </div>
     <Paginator v-model:first="offset" class="mt-8" :rows="10" :totalRecords="total" :rowsPerPageOptions="[10, 20, 30]" />
   </div>
