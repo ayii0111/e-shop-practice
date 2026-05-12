@@ -253,7 +253,7 @@ onMounted(() => {
       <!-- 頭部：頭像和基本資訊 -->
       <template #header>
         <!-- <div class="flex items-center gap-6 bg-gradient-to-r from-blue-50 to-purple-50 p-6"> -->
-        <div class="flex items-center gap-6 bg-gray-100 p-6">
+        <div class="flex items-center gap-6 bg-gray-100 p-6 flex-wrap">
           <Avatar :image="userProfile.avatar_url" size="xlarge" shape="circle" class="shadow-lg border-4 border-white" />
           <div class="flex-1">
             <h2 class="mb-2 font-bold text-2xl">
@@ -263,7 +263,7 @@ onMounted(() => {
               <font-awesome-icon :icon="['fas', 'envelope']" class="mr-2" />
               {{ userProfile.email }}
             </p>
-            <div class="flex items-center gap-4 mt-2">
+            <div class="flex items-center gap-4 mt-2 flex-wrap">
               <span class="px-3 py-1 rounded-full font-semibold text-sm" :class="getMemberLevelColor(userProfile.member_level)">
                 <font-awesome-icon :icon="['fas', 'crown']" class="mr-1" />
                 {{ getMemberLevelText(userProfile.member_level) }}

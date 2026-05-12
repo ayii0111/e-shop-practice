@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Listbox } from 'primevue'
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
 const userOptions = ref([
   { label: '個人資料', icon: ['fas', 'address-card'], name: 'ProfileTabPanel' },
@@ -40,16 +41,21 @@ const dtListbox = {
     selectedFocusColor: 'white',
   },
 }
+
+// #region  左側欄在小裝置時隱藏:  ------------------------------
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const isDesktop = breakpoints.greaterOrEqual('md')
+// #endregion ------------------------------
 </script>
 
 <template>
-  <div class="flex p-4">
+  <div class="flex md:p-4">
     <!-- <div class="border-2 rounded-md"> -->
-    <div class="">
+    <div v-if="isDesktop">
       <Listbox v-model="selectedOption" :dt="dtListbox" :options="userOptions" optionLabel="label" :metaKeySelection="true" class="min-w-40" />
     </div>
     <div class="w-full">
-      <RouterView data-role="Panel" class="w-full min-h-[550px] px-4" />
+      <RouterView data-role="Panel" class="w-full min-h-[550px] md:px-4" />
     </div>
   </div>
 </template>

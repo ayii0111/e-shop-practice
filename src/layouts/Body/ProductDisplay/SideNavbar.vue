@@ -52,7 +52,22 @@ function resolver({ values }: { values: Record<string, any> }) {
   }
 }
 
-const initSuggestions = [] as string[]
+// #region  搜尋歷史紀錄:  ------------------------------
+const HISTORY_KEY = 'search_history'
+const MAX_HISTORY = 20
+
+// 從 localStorage 讀取歷史紀錄
+const initSuggestions = useLocalStorage<string[]>(HISTORY_KEY, [])
+
+// 儲存關鍵字到歷史紀錄
+function saveToHistory(keyword: string) {
+  const trimmed = keyword.trim()
+  if (!trimmed) { return }
+  // 去除重複，把最新的放到最前面
+  const updated = [trimmed, ...initSuggestions.value.filter(item => item !== trimmed)]
+  initSuggestions.value = updated.slice(0, MAX_HISTORY)
+}
+// #endregion ------------------------------
 
 // 每次輸入框的值改變時就觸發，包含：
 // 打每一個英文字母
@@ -60,13 +75,17 @@ const initSuggestions = [] as string[]
 // 貼上文字
 // 中文輸入法確認後（注意：中文輸入法組字過程中不會觸發，要按下確認鍵才算）
 function search(event: any) {
-  if (initSuggestions.length === 0) { return }
-  suggestions.value = initSuggestions.filter(item => item.includes(event.query))
+  if (initSuggestions.value.length === 0) { return }
+  const query = event.query.toLowerCase()
+  suggestions.value = initSuggestions.value.filter(item => item.toLowerCase().includes(query))
 }
 
 const value = ref()
-function onFormSubmit({ valid }: any) {
-  if (valid) { router.push({ path: `/products-display-body/product-list/${value.value}` }) }
+function onFormSubmit({ valid, values }: any) {
+  if (valid) {
+    saveToHistory(values.keyword)
+    router.push({ path: `/products-display-body/product-list/${values.keyword}` })
+  }
 }
 // #endregion ------------------------------
 
