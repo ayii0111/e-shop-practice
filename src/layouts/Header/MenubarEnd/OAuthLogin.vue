@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { Listbox, Popover } from 'primevue'
 import axios from 'axios'
-import { debug, useWarpToast } from '@util'
+import { debugLog, useWarpToast } from '@util'
 import { useAuthStore } from '@stores/useAuthStore'
 
 const loading = ref(false)
@@ -86,7 +86,7 @@ async function exchangeCodeForToken() {
 
     if (respError) {
       useWarpToast('登入失敗', respError.message)
-      debug('登入失敗', () => respError)
+      debugLog('登入失敗', () => respError)
       return
     }
     // 登入成功，統一由 authStore 寫入 localStorage

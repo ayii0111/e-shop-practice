@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Avatar, Button, Card, Divider, InputMask, InputText, Message, Textarea } from 'primevue'
 // import { useToast } from 'primevue/usetoast'
-import { debug, useWarpToast } from '@util'
+import { debugLog, useWarpToast } from '@util'
 import { supabaseApi, supabaseAuth } from '@services'
 import { useAuthStore } from '@stores/useAuthStore'
 
@@ -77,7 +77,7 @@ async function fetchUserProfile() {
   if (!accessToken.value) { return }
 
   loading.value = true
-  try { 
+  try {
     const userId = getUserIdFromToken(accessToken.value)
     // supabaseApi 已由 interceptor 自動帶入 token，不需手動傳 header
     const [respError, resp] = await to(supabaseApi.get(
@@ -86,14 +86,14 @@ async function fetchUserProfile() {
     ))
 
     if (respError) {
-      debug('fetchUserProfile 錯誤', () => respError)
+      debugLog('fetchUserProfile 錯誤', () => respError)
       return
     }
 
     // user_profiles 資料表直接對應 UserProfile interface
     // Supabase REST API 回傳陣列，取第一筆
     const user: UserProfile = resp!.data[0]
-    debug(() => user)
+    debugLog(() => user)
 
     userProfile.value = {
       ...userProfile.value,
@@ -103,7 +103,7 @@ async function fetchUserProfile() {
   }
   catch (error: any) {
     console.error('取得用戶資料失敗:', error)
-    debug('載入失敗', () => error)
+    debugLog('載入失敗', () => error)
     useWarpToast('載入失敗', '無法取得用戶資料')
     // toast.add({
     //   severity: 'error',

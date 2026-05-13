@@ -2,7 +2,10 @@
 import { Toast } from 'primevue'
 import { storeToRefs } from 'pinia'
 import { useJsonViewStore } from '@stores/useJsonViewStore'
+import { debugLog } from '@util'
 
+debugLog('測試', { mainLabel: '區塊標題' })
+debugLog('測試')
 const breakpoints = useBreakpoints({
   'sm': 640,
   'md': 768,
@@ -10,6 +13,13 @@ const breakpoints = useBreakpoints({
   'xl': 1280,
   '2xl': 1536,
 })
+const str = 'hello'
+const obj = { a: { b: 1 } }
+debugLog(() => obj)
+debugLog(() => str)
+debugLog('測試', () => obj)
+debugLog(() => [obj, obj])
+
 const current = computed(() => {
   if (breakpoints['2xl'].value) { return '2xl' }
   if (breakpoints.xl.value) { return 'xl' }
