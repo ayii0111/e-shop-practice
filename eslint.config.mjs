@@ -12,6 +12,10 @@ export default antfu(
       'import-x/resolver': {
         typescript: {
           project: resolve('./tsconfig.app.json'),
+          extensions: ['.ts', '.tsx', '.vue', '.js', '.jsx'],
+        },
+        node: {
+          extensions: ['.ts', '.tsx', '.vue', '.js', '.jsx'],
         },
       },
     },

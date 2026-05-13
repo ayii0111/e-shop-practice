@@ -1,5 +1,5 @@
 export * from './type'
 export * from './firebase'
-export * from './api'
-export * from './fackData'
 export * from './api-base'
+export * from './fackData'
+export * from './api'

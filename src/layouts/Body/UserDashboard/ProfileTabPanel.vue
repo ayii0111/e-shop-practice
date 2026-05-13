@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Avatar, Button, Card, Divider, InputMask, InputText, Message, Textarea } from 'primevue'
-import { useToast } from 'primevue/usetoast'
-import axios from 'axios'
+// import { useToast } from 'primevue/usetoast'
+import { debug, useWarpToast } from '@util'
+import { supabaseApi, supabaseAuth } from '@services'
+import { useAuthStore } from '@stores/useAuthStore'
 
-const toast = useToast()
+// const toast = useToast()
+const authStore = useAuthStore()
 
-// Supabase 配置
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string
+// ISO 8601 日期字串，例如 "2024-01-15T08:30:00.000Z"
+type ISODateString = string
 
 // 用戶資料介面
 interface UserProfile {
   // Google OAuth 提供的基本資料
-  id: string
+  user_id: string
   email: string
-  full_name: string
+  display_name: string // 小名，顯示用
+  full_name: string // 真實姓名，配送/收件用
   avatar_url: string
   // 電商業務需要的額外資料
   phone?: string
@@ -26,15 +29,16 @@ interface UserProfile {
   postal_code?: string
   // 會員資訊
   member_level?: 'general' | 'silver' | 'gold' | 'platinum'
-  member_since?: string
-  total_orders?: number
-  total_spent?: number
+  created_at: ISODateString
+  updated_at: ISODateString
+  liked_products: string[]
 }
 
 // 用戶資料
 const userProfile = ref<UserProfile>({
-  id: '',
+  user_id: '',
   email: '',
+  display_name: '',
   full_name: '',
   avatar_url: '',
   phone: '',
@@ -44,44 +48,27 @@ const userProfile = ref<UserProfile>({
   city: '',
   postal_code: '',
   member_level: 'general',
-  member_since: '',
-  total_orders: 0,
-  total_spent: 0,
+  created_at: '',
+  updated_at: '',
+  liked_products: [],
 })
 
 // 編輯模式
 const isEditing = ref(false)
 const loading = ref(false)
-const accessToken = ref('')
+// accessToken 統一從 authStore 取得，不再自行管理
+const accessToken = computed(() => authStore.accessToken)
 
-// 從 localStorage 載入用戶資料
-function loadUserFromLocalStorage() {
-  const savedUser = localStorage.getItem('sb_user')
-  const savedToken = localStorage.getItem('sb_access_token')
-
-  if (savedUser && savedToken) {
-    const user = JSON.parse(savedUser)
-    accessToken.value = savedToken
-
-    // 從 Google OAuth 取得的基本資料
-    userProfile.value.id = user.id
-    userProfile.value.email = user.email
-    userProfile.value.full_name = user.user_metadata?.full_name || user.user_metadata?.name || ''
-    userProfile.value.avatar_url = user.user_metadata?.avatar_url || ''
-
-    // 嘗試從 user_metadata 或 app_metadata 載入額外資料
-    if (user.user_metadata) {
-      userProfile.value.phone = user.user_metadata.phone || ''
-      userProfile.value.birthday = user.user_metadata.birthday || ''
-      userProfile.value.gender = user.user_metadata.gender || ''
-      userProfile.value.address = user.user_metadata.address || ''
-      userProfile.value.city = user.user_metadata.city || ''
-      userProfile.value.postal_code = user.user_metadata.postal_code || ''
-    }
-
-    // 會員資訊（這些通常從後端 API 取得）
-    userProfile.value.member_since = user.created_at || ''
-    userProfile.value.member_level = user.user_metadata?.member_level || 'general'
+// 從 JWT token 解析 user_id（token payload 的 sub 欄位）
+// JWT 使用 URL-safe Base64，需先將 - 換回 +、_ 換回 / 才能用 atob 解析
+function getUserIdFromToken(token: string): string {
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(atob(base64))
+    return payload.sub ?? ''
+  }
+  catch {
+    return ''
   }
 }
 
@@ -90,48 +77,40 @@ async function fetchUserProfile() {
   if (!accessToken.value) { return }
 
   loading.value = true
-  try {
-    const response = await axios.get(
-      `${supabaseUrl}/auth/v1/user`,
-      {
-        headers: {
-          apikey: supabasePublishableKey,
-          Authorization: `Bearer ${accessToken.value}`,
-        },
-      },
-    )
+  try { 
+    const userId = getUserIdFromToken(accessToken.value)
+    // supabaseApi 已由 interceptor 自動帶入 token，不需手動傳 header
+    const [respError, resp] = await to(supabaseApi.get(
+      '/user_profiles',
+      { params: { user_id: `eq.${userId}` } },
+    ))
 
-    const user = response.data
-    // 更新用戶資料
-    userProfile.value.id = user.id
-    userProfile.value.email = user.email
-    userProfile.value.full_name = user.user_metadata?.full_name || user.user_metadata?.name || ''
-    userProfile.value.avatar_url = user.user_metadata?.avatar_url || ''
-
-    // 載入額外資料
-    if (user.user_metadata) {
-      userProfile.value.phone = user.user_metadata.phone || ''
-      userProfile.value.birthday = user.user_metadata.birthday || ''
-      userProfile.value.gender = user.user_metadata.gender || ''
-      userProfile.value.address = user.user_metadata.address || ''
-      userProfile.value.city = user.user_metadata.city || ''
-      userProfile.value.postal_code = user.user_metadata.postal_code || ''
-      userProfile.value.member_level = user.user_metadata.member_level || 'general'
+    if (respError) {
+      debug('fetchUserProfile 錯誤', () => respError)
+      return
     }
 
-    userProfile.value.member_since = user.created_at || ''
+    // user_profiles 資料表直接對應 UserProfile interface
+    // Supabase REST API 回傳陣列，取第一筆
+    const user: UserProfile = resp!.data[0]
+    debug(() => user)
 
-    // 更新 localStorage
-    localStorage.setItem('sb_user', JSON.stringify(user))
+    userProfile.value = {
+      ...userProfile.value,
+      ...user,
+    }
+    // sb_user 由 authStore 統一管理，此處不覆寫
   }
   catch (error: any) {
     console.error('取得用戶資料失敗:', error)
-    toast.add({
-      severity: 'error',
-      summary: '載入失敗',
-      detail: '無法取得用戶資料',
-      life: 3000,
-    })
+    debug('載入失敗', () => error)
+    useWarpToast('載入失敗', '無法取得用戶資料')
+    // toast.add({
+    //   severity: 'error',
+    //   summary: '載入失敗',
+    //   detail: '無法取得用戶資料',
+    //   life: 3000,
+    // })
   }
   finally {
     loading.value = false
@@ -146,7 +125,7 @@ async function updateUserProfile() {
   try {
     // 準備要更新的 user_metadata
     const updatedMetadata = {
-      full_name: userProfile.value.full_name,
+      full_name: userProfile.value.display_name,
       phone: userProfile.value.phone,
       birthday: userProfile.value.birthday,
       gender: userProfile.value.gender,
@@ -155,27 +134,8 @@ async function updateUserProfile() {
       postal_code: userProfile.value.postal_code,
     }
 
-    await axios.put(
-      `${supabaseUrl}/auth/v1/user`,
-      {
-        data: updatedMetadata,
-      },
-      {
-        headers: {
-          'apikey': supabasePublishableKey,
-          'Authorization': `Bearer ${accessToken.value}`,
-          'Content-Type': 'application/json',
-        },
-      },
-    )
-
-    toast.add({
-      severity: 'success',
-      summary: '更新成功',
-      detail: '個人資料已更新',
-      life: 3000,
-    })
-
+    // supabaseAuth 已由 interceptor 自動帶入 token，不需手動傳 header
+    await supabaseAuth.put('/user', { data: updatedMetadata })
     isEditing.value = false
 
     // 重新載入用戶資料
@@ -183,12 +143,13 @@ async function updateUserProfile() {
   }
   catch (error: any) {
     console.error('更新用戶資料失敗:', error)
-    toast.add({
-      severity: 'error',
-      summary: '更新失敗',
-      detail: error.response?.data?.message || '無法更新個人資料',
-      life: 3000,
-    })
+    useWarpToast('更新失敗', error.response?.data?.message || '無法更新個人資料')
+    // toast.add({
+    //   severity: 'error',
+    //   summary: '更新失敗',
+    //   detail: error.response?.data?.message || '無法更新個人資料',
+    //   life: 3000,
+    // })
   }
   finally {
     loading.value = false
@@ -198,7 +159,8 @@ async function updateUserProfile() {
 // 取消編輯
 function cancelEdit() {
   isEditing.value = false
-  loadUserFromLocalStorage()
+  // loadUserFromLocalStorage()
+  fetchUserProfile()
 }
 
 // 格式化日期
@@ -241,35 +203,53 @@ function getGenderText(gender?: string): string {
 }
 
 onMounted(() => {
-  loadUserFromLocalStorage()
-  // 可選：從 Supabase 取得最新資料
-  // fetchUserProfile()
+  // accessToken 已由 authStore 統一管理，不需再手動讀 localStorage
+  fetchUserProfile()
+
+  // 監聽 interceptor 發出的 session 過期事件，顯示 toast 提示
+  // 事件由 api-base.ts 的 clearAuthAndRedirect 觸發，
+  // 在 service 層與 UI 層之間用自訂事件解耦，避免 service 直接依賴 useToast
+  window.addEventListener('auth:session-expired', onSessionExpired)
 })
+
+onUnmounted(() => {
+  window.removeEventListener('auth:session-expired', onSessionExpired)
+})
+
+function onSessionExpired() {
+  useWarpToast('登入已過期', '請重新登入')
+  // toast.add({
+  //   severity: 'warn',
+  //   summary: '登入已過期',
+  //   detail: '請重新登入',
+  //   life: 5000,
+  // })
+}
 </script>
 
 <template>
-  <div class=" profile-panel">
+  <div class="profile-panel">
     <Card>
       <!-- 頭部：頭像和基本資訊 -->
       <template #header>
         <!-- <div class="flex items-center gap-6 bg-gradient-to-r from-blue-50 to-purple-50 p-6"> -->
-        <div class="flex items-center gap-6 bg-gray-100 p-6 flex-wrap">
+        <div class="flex flex-wrap items-center gap-6 bg-gray-100 p-6">
           <Avatar :image="userProfile.avatar_url" size="xlarge" shape="circle" class="shadow-lg border-4 border-white" />
           <div class="flex-1">
             <h2 class="mb-2 font-bold text-2xl">
-              {{ userProfile.full_name || '未設定姓名' }}
+              {{ userProfile.display_name || '未設定姓名' }}
             </h2>
             <p class="mb-1 text-gray-600">
               <font-awesome-icon :icon="['fas', 'envelope']" class="mr-2" />
               {{ userProfile.email }}
             </p>
-            <div class="flex items-center gap-4 mt-2 flex-wrap">
+            <div class="flex flex-wrap items-center gap-4 mt-2">
               <span class="px-3 py-1 rounded-full font-semibold text-sm" :class="getMemberLevelColor(userProfile.member_level)">
                 <font-awesome-icon :icon="['fas', 'crown']" class="mr-1" />
                 {{ getMemberLevelText(userProfile.member_level) }}
               </span>
               <span class="text-gray-500 text-sm">
-                加入時間：{{ formatDate(userProfile.member_since!) }}
+                加入時間：{{ formatDate(userProfile.created_at!) }}
               </span>
             </div>
           </div>
@@ -296,9 +276,9 @@ onMounted(() => {
               <!-- 姓名 -->
               <div class="flex flex-col gap-2">
                 <label class="font-medium text-gray-600 text-sm">姓名</label>
-                <InputText v-if="isEditing" v-model="userProfile.full_name" placeholder="請輸入姓名" />
+                <InputText v-if="isEditing" v-model="userProfile.display_name" placeholder="請輸入姓名" />
                 <p v-else class="bg-gray-100 p-3 rounded">
-                  {{ userProfile.full_name || '未設定' }}
+                  {{ userProfile.display_name || '未設定' }}
                 </p>
               </div>
 
@@ -307,7 +287,7 @@ onMounted(() => {
                 <label class="font-medium text-gray-600 text-sm">電子郵件</label>
                 <InputText v-if="isEditing" v-model="userProfile.email" placeholder="" />
 
-                <p class="bg-gray-100 p-3 rounded text-gray-500">
+                <p v-else class="bg-gray-100 p-3 rounded text-gray-500">
                   {{ userProfile.email }}
                 </p>
               </div>
@@ -393,48 +373,6 @@ onMounted(() => {
           </div>
 
           <Divider />
-
-          <!-- 會員統計區塊 -->
-          <!-- <div>
-            <h3 class="flex items-center gap-2 mb-4 font-semibold text-gray-700 text-lg">
-              <font-awesome-icon :icon="['fas', 'chart-line']" />
-              會員統計
-            </h3>
-            <div class="gap-4 grid grid-cols-1 md:grid-cols-3">
-              <div class="bg-blue-50 p-4 rounded-lg text-center">
-                <div class="mb-2 font-bold text-blue-600 text-3xl">
-                  {{ userProfile.total_orders || 0 }}
-                </div>
-                <div class="text-gray-600 text-sm">
-                  總訂單數
-                </div>
-              </div>
-              <div class="bg-green-50 p-4 rounded-lg text-center">
-                <div class="mb-2 font-bold text-green-600 text-3xl">
-                  NT$ {{ (userProfile.total_spent || 0).toLocaleString() }}
-                </div>
-                <div class="text-gray-600 text-sm">
-                  累計消費
-                </div>
-              </div>
-              <div class="bg-purple-50 p-4 rounded-lg text-center">
-                <div class="mb-2 font-bold text-3xl" :class="getMemberLevelColor(userProfile.member_level)">
-                  {{ getMemberLevelText(userProfile.member_level) }}
-                </div>
-                <div class="text-gray-600 text-sm">
-                  會員等級
-                </div>
-              </div>
-            </div>
-          </div> -->
-
-          <!-- 提示訊息 -->
-          <!-- <Message v-if="!isEditing" severity="info" :closable="false">
-            <template #icon>
-              <font-awesome-icon :icon="['fas', 'circle-info']" />
-            </template>
-點擊「編輯資料」按鈕可以更新您的個人資料
-</Message> -->
         </div>
       </template>
     </Card>

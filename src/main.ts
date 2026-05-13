@@ -4,7 +4,6 @@ import VueAxios from 'vue-axios'
 import 'primeicons/primeicons.css'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
-import { clerkPlugin } from 'vue-clerk'
 import Aura from '@primevue/themes/aura'
 
 import 'vue-json-component-vue-3/dist/style.css'
@@ -19,12 +18,18 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import './assets/tw.css'
 import App from './App.vue'
 import router from './router'
+import { useAuthStore } from './stores/useAuthStore'
 
 library.add(fas)
 
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
+
+// app 啟動時立即從 localStorage 還原 auth 狀態
+// 放在這裡確保任何元件掛載前狀態就已就緒，避免重整後短暫顯示未登入
+const authStore = useAuthStore()
+authStore.restoreFromStorage()
 app.component('FontAwesomeIcon', FontAwesomeIcon)
 app.component('JSONView', JSONView)
 
@@ -63,9 +68,7 @@ app.use(PrimeVue, {
     },
   },
 })
-// app.use(clerkPlugin, {
-//   publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-// })
+
 app.use(VueAxios, axios)
 app.provide('axios', app.config.globalProperties.axios)
 

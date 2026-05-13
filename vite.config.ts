@@ -70,7 +70,7 @@ export default defineConfig({
       '@icon': fileURLToPath(new URL('./src/assets/icon', import.meta.url)),
       '@services': fileURLToPath(new URL('./src/services', import.meta.url)),
       '@stores': fileURLToPath(new URL('./src/stores', import.meta.url)),
-
+      '@util': fileURLToPath(new URL('./src/util', import.meta.url)),
     },
   },
 })

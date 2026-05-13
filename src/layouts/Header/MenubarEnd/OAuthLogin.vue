@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { Listbox, Popover } from 'primevue'
-
 import axios from 'axios'
+import { debug, useWarpToast } from '@util'
+import { useAuthStore } from '@stores/useAuthStore'
+
+const loading = ref(false)
+const authStore = useAuthStore()
 
 // #region 第三方登入驗證: ------------------------------
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
@@ -28,28 +32,30 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
 
 async function loginWithGoogle() {
   loading.value = true
-  error.value = null
+
   try {
     // PKCE 第一步：產生 code_verifier 並存到 sessionStorage，等重導向回來後使用
     const codeVerifier = generateCodeVerifier()
     sessionStorage.setItem('pkce_code_verifier', codeVerifier)
 
+    // 記住登入前用戶瀏覽到一半的頁面，登入後導回（使用 hash，因為 router 用 createWebHashHistory）
+    sessionStorage.setItem('login_redirect', window.location.hash || '#/')
+
     // PKCE 第二步：產生 code_challenge 帶進授權 URL
     const codeChallenge = await generateCodeChallenge(codeVerifier)
 
     // 組出 Supabase OAuth 授權 URL，讓瀏覽器跳頁到 Google 登入頁
-    // 要重新跳轉回來的頁面
+    // 在 Supabase 後台設定的跳轉回來的白名單網址，他是固定的，因此無法由這裡去設計，每次登入回來的頁面，就是你登入前瀏覽到一半的頁面
     const redirectTo = encodeURIComponent(`${window.location.origin}${import.meta.env.BASE_URL}`)
     // 透過頁面跳轉導航到 Supabase 處理授權的端點
-    window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${redirectTo}&code_challenge=${codeChallenge}&code_challenge_method=s256`
+    window.location.href
+      = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${redirectTo}&code_challenge=${codeChallenge}&code_challenge_method=s256`
   }
-  catch (err: any) {
-    error.value = err.message
+  catch (error: any) {
+    useWarpToast('跳轉登入頁面前，發生錯誤', error.message)
     loading.value = false
   }
 }
-
-const userStore = ref({}) as Ref<{ user: any, access_token?: string }>
 
 // 重導向回來後，手動用 axios 把 URL 上的 code 換成 access_token
 async function exchangeCodeForToken() {
@@ -58,105 +64,94 @@ async function exchangeCodeForToken() {
   // 而後面的字段主要用於傳輸「授權 code」數據
   const params = new URLSearchParams(window.location.search)
   const code = params.get('code')
-  if (!code) { return }
+  if (!code) {
+    return
+  }
 
   try {
     // 取出跳頁前存好的 code_verifier
     const codeVerifier = sessionStorage.getItem('pkce_code_verifier')
     if (!codeVerifier) {
-      error.value = '找不到 code_verifier，請重新登入'
+      // error.value = '找不到 code_verifier，請重新登入'
+      useWarpToast('登入失敗', '找不到 code_verifier，請重新登入')
       return
     }
 
     // 打 Supabase token exchange API，把 code 換成 access_token
-    const res = await axios.post(
+    const [respError, resp] = await to(axios.post(
       `${supabaseUrl}/auth/v1/token?grant_type=pkce`,
       { auth_code: code, code_verifier: codeVerifier },
       { headers: { 'apikey': supabasePublishableKey, 'Content-Type': 'application/json' } },
-    )
+    )) as [Error, any]
 
-    userStore.value.user = res.data.user
-    userStore.value.access_token = res.data.access_token
-    localStorage.setItem('sb_user', JSON.stringify(res.data.user))
-    localStorage.setItem('sb_access_token', res.data.access_token)
-    localStorage.setItem('sb_refresh_token', res.data.refresh_token)
+    if (respError) {
+      useWarpToast('登入失敗', respError.message)
+      debug('登入失敗', () => respError)
+      return
+    }
+    // 登入成功，統一由 authStore 寫入 localStorage
+    authStore.setAuth(resp.data.user, resp.data.access_token, resp.data.refresh_token)
 
     // 清除 URL 上的 code，避免重新整理時重複換 token
     window.history.replaceState({}, '', window.location.pathname)
+
+    // 登入成功後導回登入前的頁面，若無記錄則回首頁
+    const redirectHash = sessionStorage.getItem('login_redirect') || '#/'
+    sessionStorage.removeItem('login_redirect')
+    window.location.hash = redirectHash
   }
-  catch (err: any) {
-    error.value = err.response?.data?.msg ?? err.message
+  catch (error: any) {
+    useWarpToast('登入失敗', error.message)
   }
 }
 
 async function logout() {
-  // Supabase OAuth 登出不需要呼叫 API
-  // 只需要清除本地的 token 和用戶數據即可
-  // 因為 OAuth token 是由 Google 管理的，Supabase 只是中介
-
-  // 清除本地數據
-  userStore.value.user = null
-  userStore.value.access_token = undefined
-  localStorage.removeItem('sb_user')
-  localStorage.removeItem('sb_access_token')
-  localStorage.removeItem('sb_refresh_token')
-  sessionStorage.removeItem('pkce_code_verifier')
-
-  // 導航到首頁
+  // 統一由 authStore 清除所有 auth 資料與 localStorage
+  authStore.clearAuth()
   router.push({ name: 'Home' })
 }
 onMounted(async () => {
-  // 1. 先從 localStorage 還原登入狀態（處理重整的情況）
-  const savedUser = localStorage.getItem('sb_user')
-  const savedToken = localStorage.getItem('sb_access_token')
-  if (savedUser && savedToken) {
-    userStore.value.user = JSON.parse(savedUser)
-    userStore.value.access_token = savedToken
-  }
-  console.log('savedUser', JSON.parse(savedUser!))
-
-  // 2. 再檢查是否是從 OAuth 跳回來（有 code 才會執行，沒有就直接 return）
+  // 這裡只需處理從 OAuth 跳回來的情況
   await exchangeCodeForToken()
 })
 // #endregion ------------------------------
 // #region  頭像選單: 涵蓋元件 <Popover> <Listbox> ------------------------------
-const loading = ref(false)
-const error = ref<string | null>(null)
 
-const op = ref()
-function toggle(event: any) {
-  op.value.toggle(event)
-}
 const selectedUserOption = ref()
 
 const userOptions = ref([
-  { label: '登出', icon: ['fas', 'right-from-bracket'], name: '' },
-  { label: '個人資料', icon: ['fas', 'address-card'], name: 'ProfileTabPanel' },
-  { label: '我的優惠券 (2)', icon: ['fas', 'ticket'], name: 'CouponTabPanel' },
-  { label: '我的訂單', icon: ['fas', 'file-lines'], name: 'OrderlistTabPanel' },
+  { label: '登出', icon: ['fas', 'right-from-bracket'], routeName: '' },
+  { label: '個人資料', icon: ['fas', 'address-card'], routeName: 'ProfileTabPanel' },
+  { label: '我的優惠券 (2)', icon: ['fas', 'ticket'], routeName: 'CouponTabPanel' },
+  { label: '我的訂單', icon: ['fas', 'file-lines'], routeName: 'OrderlistTabPanel' },
 ])
 
 const router = useRouter()
+const popoverOpreation = ref()
+const toggle = (event: any) => popoverOpreation.value.toggle(event)
+
 watch(selectedUserOption, (newValue) => {
   if (!newValue) { return }
 
   if (newValue.label === '登出') {
     logout()
   }
-  else if (newValue.name) {
-    router.push({ name: newValue.name })
-    toggle(undefined)
+  else if (newValue.routeName) {
+    router.push({ name: newValue.routeName })
+    toggle('')
   }
 
-  // 重置選擇，避免無法重複點擊同一選項
-  selectedUserOption.value = null
+  // 每次點擊完，都重置選擇的選項
+  // selectedUserOption.value = null
 })
-const dtListbox = {
+const listBoxDt = {
   root: {
     borderColor: 'opacity',
+    optionSelectedBackground: 'opacity',
+    optionFocusBackground: 'opacity',
   },
 }
-const dtPopover = {
+const popoverDt = {
   root: {
     contentPadding: 0,
     arrowOffset: '12px',
@@ -169,7 +164,7 @@ const dtPopover = {
 <template>
   <div class="">
     <!-- 未登入狀態 -->
-    <div v-if="!userStore.user">
+    <div v-if="!authStore.user">
       <slot :loginWithGoogle>
         <button class="bg-blue-500 hover:bg-blue-700 px-4 py-2 rounded font-bold text-white" :disabled="loading" @click="loginWithGoogle">
           未登入，應登入
@@ -178,15 +173,15 @@ const dtPopover = {
     </div>
     <!-- 已登入狀態 -->
     <div v-else class="border border-gray-300 rounded-full">
-      <!-- <img :src="userStore.user.user_metadata.avatar_url" class="rounded-full size-6" alt=""> -->
+      <!-- <img :src="authStore.user.user_metadata.avatar_url" class="rounded-full size-6" alt=""> -->
       <div class="flex justify-center card">
         <button type="button" class="" @click="toggle">
-          <img :src="userStore.user.user_metadata.avatar_url" class="rounded-full size-6" alt="">
+          <img :src="authStore.user?.user_metadata?.avatar_url" class="rounded-full size-6" alt="">
         </button>
 
-        <Popover ref="op" :dt="dtPopover">
+        <Popover ref="popoverOpreation" :dt="popoverDt">
           <div>
-            <Listbox v-model="selectedUserOption" :dt="dtListbox" :options="userOptions" optionLabel="label">
+            <Listbox v-model="selectedUserOption" :dt="listBoxDt" :options="userOptions" optionLabel="label">
               <template #option="slotProps">
                 <div class="flex items-center">
                   <span><font-awesome-icon :icon="slotProps.option.icon" class="mr-2" /></span>
