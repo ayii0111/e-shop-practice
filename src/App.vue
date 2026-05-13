@@ -2,10 +2,12 @@
 import { Toast } from 'primevue'
 import { storeToRefs } from 'pinia'
 import { useJsonViewStore } from '@stores/useJsonViewStore'
-import { debugLog } from '@util'
+import { useToastStore } from '@stores/useToastStore'
 
-debugLog('測試', { mainLabel: '區塊標題' })
-debugLog('測試')
+// App.vue 是根元件，在此初始化 toastStore，確保整個 app 都能使用
+const toastStore = useToastStore()
+toastStore.init()
+
 const breakpoints = useBreakpoints({
   'sm': 640,
   'md': 768,
@@ -13,12 +15,6 @@ const breakpoints = useBreakpoints({
   'xl': 1280,
   '2xl': 1536,
 })
-const str = 'hello'
-const obj = { a: { b: 1 } }
-debugLog(() => obj)
-debugLog(() => str)
-debugLog('測試', () => obj)
-debugLog(() => [obj, obj])
 
 const current = computed(() => {
   if (breakpoints['2xl'].value) { return '2xl' }

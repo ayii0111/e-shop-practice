@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { OverlayBadge } from 'primevue'
-import { OAuthLogin } from './MenubarEnd'
+import { OAuthLogin } from './inMenubarEnd/index'
 
 // #region  購物車 數量圖標: <OverlayBadge> 元件 props ------------------------------
 const overlayBadgeDt = ref({

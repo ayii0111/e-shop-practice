@@ -4,6 +4,8 @@ import { useToast } from 'primevue/usetoast'
 
 import { categoryApi, likeApi, searchApi } from '@services'
 
+import { useAuthStore } from '@stores/useAuthStore'
+
 import type { Product } from '@services/type'
 
 // const { dataInject } = useJsonViewStore()
@@ -19,6 +21,7 @@ import type { Product } from '@services/type'
 
 export function useProductList() {
   const toast = useToast()
+  const authStore = useAuthStore()
 
   const route = useRoute()
   const products = ref({}) as Ref<Product[]>
@@ -36,7 +39,8 @@ export function useProductList() {
       {
         name: 'like商品 api',
         condFn: (productList: string) => productList === 'like',
-        handleFn: (productList: string) => likeApi(productList, limit, newOffset),
+        // 傳入當前登入用戶的 user_id，而非路由參數字串
+        handleFn: () => likeApi(authStore.user?.id ?? '', limit, newOffset),
       },
       {
         name: '類別商品 api',

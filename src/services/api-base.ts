@@ -1,6 +1,6 @@
 import axios from 'axios'
-
 import router from '../router'
+import { debugLog } from "@util";
 
 // 建立 Axios 實例用於 Supabase REST API
 export const supabaseApi = axios.create({
@@ -24,7 +24,7 @@ export const supabaseAuth = axios.create({
 // 每次請求前自動從 localStorage 取得最新 token 注入 Authorization header
 // 不在 axios.create 時寫死，是因為 token 可能在 refresh 後更新，
 // 每次請求都重新讀取才能確保使用最新的 token
-function attachToken(config: any) {
+function attachToken (config: any) {
   const token = localStorage.getItem('sb_access_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -52,7 +52,7 @@ let isRefreshing = false
 // 在 refresh 進行中，暫存其他等待中的請求，refresh 完成後一併重送
 let pendingRequests: Array<(token: string) => void> = []
 
-async function handleTokenRefresh() {
+async function handleTokenRefresh () {
   const refreshToken = localStorage.getItem('sb_refresh_token')
   if (!refreshToken) { throw new Error('no refresh token') }
 
@@ -76,7 +76,7 @@ async function handleTokenRefresh() {
   return access_token
 }
 
-function clearAuthAndRedirect() {
+function clearAuthAndRedirect () {
   // 清除所有 auth 相關資料
   localStorage.removeItem('sb_access_token')
   localStorage.removeItem('sb_refresh_token')
@@ -91,7 +91,7 @@ function clearAuthAndRedirect() {
   window.dispatchEvent(new CustomEvent('auth:session-expired'))
 }
 
-function applyResponseInterceptor(instance: typeof supabaseApi) {
+function applyResponseInterceptor (instance: typeof supabaseApi) {
   instance.interceptors.response.use(
     // 成功直接放行
     response => response,

@@ -1,4 +1,5 @@
 import { supabaseApi } from './api-base'
+import { debugLog, useWarpToast } from '@util'
 
 // limit 默認為 12
 // 輸入類別
@@ -13,8 +14,12 @@ export async function categoryApi(category: string, limit: number, offset: numbe
 // 流程：先從用戶表取得 like_list（商品 id 陣列），再批次取得商品資料
 export async function likeApi(userid: string, limit: number, offset: number) {
   // Step 1：取得用戶的 like_list
-  const userResp = await supabaseApi.get(`/users?id=eq.${userid}&select=like_list`)
-  const likeList: string[] = userResp.data?.[0]?.like_list ?? []
+  const [userRespError, userResp] = await to(supabaseApi.get(`/user_profiles?user_id=eq.${userid}&select=liked_products`)) as [Error, any]
+  if (userRespError) {
+    useWarpToast('取得用戶 like_list 失敗', userRespError.message)
+    debugLog('取得用戶 like_list 失敗', () => userRespError)
+  }
+  const likeList: string[] = userResp?.data?.[0]?.liked_products ?? []
 
   if (likeList.length === 0) {
     // 沒有 like 的商品，直接回傳空結果

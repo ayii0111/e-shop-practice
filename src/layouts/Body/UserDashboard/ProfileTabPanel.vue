@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Avatar, Button, Card, Divider, InputMask, InputText, Message, Textarea } from 'primevue'
 // import { useToast } from 'primevue/usetoast'
 import { debugLog, useWarpToast } from '@util'
-import { supabaseApi, supabaseAuth } from '@services'
+import { supabaseApi } from '@services'
 import { useAuthStore } from '@stores/useAuthStore'
 
 // const toast = useToast()
@@ -93,7 +93,6 @@ async function fetchUserProfile() {
     // user_profiles 資料表直接對應 UserProfile interface
     // Supabase REST API 回傳陣列，取第一筆
     const user: UserProfile = resp!.data[0]
-    debugLog(() => user)
 
     userProfile.value = {
       ...userProfile.value,
@@ -123,33 +122,39 @@ async function updateUserProfile() {
 
   loading.value = true
   try {
-    // 準備要更新的 user_metadata
-    const updatedMetadata = {
-      full_name: userProfile.value.display_name,
-      phone: userProfile.value.phone,
-      birthday: userProfile.value.birthday,
-      gender: userProfile.value.gender,
-      address: userProfile.value.address,
-      city: userProfile.value.city,
-      postal_code: userProfile.value.postal_code,
+    const userId = getUserIdFromToken(accessToken.value)
+
+    // 對 user_profiles 資料表做 PATCH，欄位直接對應 UserProfile interface
+    // supabaseApi 已由 interceptor 自動帶入 token，不需手動傳 header
+    const [respError] = await to(supabaseApi.patch(
+      '/user_profiles',
+      {
+        display_name: userProfile.value.display_name,
+        full_name: userProfile.value.full_name,
+        phone: userProfile.value.phone,
+        birthday: userProfile.value.birthday,
+        gender: userProfile.value.gender,
+        address: userProfile.value.address,
+        city: userProfile.value.city,
+        postal_code: userProfile.value.postal_code,
+      },
+      { params: { user_id: `eq.${userId}` } },
+    ))
+
+    if (respError) {
+      debugLog('updateUserProfile 錯誤', () => respError)
+      useWarpToast('更新失敗', respError.message || '無法更新個人資料')
+      return
     }
 
-    // supabaseAuth 已由 interceptor 自動帶入 token，不需手動傳 header
-    await supabaseAuth.put('/user', { data: updatedMetadata })
+    useWarpToast('更新成功', '個人資料已更新', 'success')
     isEditing.value = false
 
     // 重新載入用戶資料
     await fetchUserProfile()
   }
   catch (error: any) {
-    console.error('更新用戶資料失敗:', error)
     useWarpToast('更新失敗', error.response?.data?.message || '無法更新個人資料')
-    // toast.add({
-    //   severity: 'error',
-    //   summary: '更新失敗',
-    //   detail: error.response?.data?.message || '無法更新個人資料',
-    //   life: 3000,
-    // })
   }
   finally {
     loading.value = false
@@ -217,7 +222,7 @@ onUnmounted(() => {
 })
 
 function onSessionExpired() {
-  useWarpToast('登入已過期', '請重新登入')
+  useWarpToast('登入已過期', '請重新登入', 'warn')
   // toast.add({
   //   severity: 'warn',
   //   summary: '登入已過期',
