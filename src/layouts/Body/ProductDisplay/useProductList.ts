@@ -37,14 +37,34 @@ export function useProductList() {
     const userId = authStore.user?.id ?? null
 
     // 已登入：統一走 RPC，回傳資料含 is_liked 狀態
+    // 例外：like 列表改走 likeApi（兩次請求），原因：
+    //   - RPC 回傳全部商品再前端 filter，分頁計算會錯誤
+    //   - likeApi 直接批次查詢已收藏的商品，分頁天然正確
+    //   - 回傳後手動設 is_liked: true，取消收藏時只更新遠端狀態和愛心圖示，商品不從列表消失
     if (userId) {
       const isLikeList = newProductList === 'like'
+
+      // like 列表：走 likeApi，手動補 is_liked: true
+      if (isLikeList) {
+        const [respError, resp] = await to(likeApi(userId, limit, newOffset))
+        if (respError) {
+          toast.add({ severity: 'error', summary: 'HTTP 錯誤', detail: respError.message })
+          loading.value = false
+          return
+        }
+        // 批次查回的商品全部都是已收藏的，手動設 is_liked: true
+        products.value = (resp.data as Product[]).map(p => ({ ...p, is_liked: true }))
+        const contentRange = resp.headers['content-range']
+        total.value = Number(contentRange?.split('/')[1] ?? 0)
+        loading.value = false
+        return
+      }
+
+      // 一般列表：走 RPC，含 is_liked 狀態
       const isCategory = categorys.includes(newProductList)
       // all 傳 null 表示不篩選類別，其他類別才傳實際值
-      const categoryParam = (!isLikeList && isCategory && newProductList !== 'all')
-        ? newProductList
-        : null
-      const searchParam = (!isLikeList && !isCategory) ? newProductList : null
+      const categoryParam = (isCategory && newProductList !== 'all') ? newProductList : null
+      const searchParam = !isCategory ? newProductList : null
 
       const [respError, resp] = await to(productsWithLikeApi(
         userId,
@@ -60,10 +80,7 @@ export function useProductList() {
         return
       }
 
-      // like 列表需額外篩選：只顯示 is_liked = true 的商品
-      products.value = isLikeList
-        ? (resp.data as any[]).filter((p: any) => p.is_liked)
-        : resp.data as any
+      products.value = resp.data as any
       const contentRange = resp.headers['content-range']
       total.value = Number(contentRange?.split('/')[1] ?? 0)
       loading.value = false

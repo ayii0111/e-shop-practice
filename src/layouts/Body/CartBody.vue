@@ -61,7 +61,7 @@ const buttonDt = {
 <template>
   <div class="mx-auto py-2 max-w-[1000px] min-h-[700px]">
     <DataTable :pt="dataTablePT" :value="products" class="mx-4 border-t border-r border-l">
-      <Column field="check" class="p-0 border-r w-10 text-center">
+      <Column field="check" class="p-1 border-r w-10 text-center">
         <template #header>
           <Checkbox v-model="selectAll" binary />
         </template>
