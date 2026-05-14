@@ -2,10 +2,6 @@
 import { Image, Paginator, Skeleton } from 'primevue'
 import { useProductList } from '../ProductDisplay'
 
-const productDetailPath = {
-  path: '/products/01',
-}
-
 // 吐司元件回報單純成敗結果
 // JSONView 則顯示錯誤資訊協助除錯
 // 由路由啟動該元件，call api 取得商品數據
@@ -48,15 +44,15 @@ const imagePt = {
         <div v-for="item in products" :key="item.product_id" class="border border-[--secondary-color] rounded max-sm:w-[291px] sm:max-w-[291px] min-h-[200px]">
           <div src="" alt="" class="relative border-b h-[200px]">
             <Image :pt="imagePt" :src="item.img_urls[0]" alt="Image" width="250" />
-            <!-- like 標記先不使用 -->
-            <!-- <div class="top-2 right-2 z-0 absolute size-[20px]">
-              <a v-if="item.isLike" href="" class="flex justify-center items-center w-full h-full">
+            <!-- like 標記：顯示收藏狀態（點擊寫入邏輯待實作） -->
+            <div class="top-2 right-2 z-0 absolute size-[20px]">
+              <button v-if="item.is_liked" class="flex justify-center items-center w-full h-full">
                 <i class="pi pi-heart-fill icon"></i>
-              </a>
-              <a v-else href="" class="flex justify-center items-center w-full h-full">
+              </button>
+              <button v-else class="flex justify-center items-center w-full h-full">
                 <i class="pi pi-heart icon"></i>
-              </a>
-            </div> -->
+              </button>
+            </div>
           </div>
           <div class="px-5 py-2 border-b">
             <h5 class="font-medium text-xl">
@@ -68,7 +64,7 @@ const imagePt = {
             </div>
           </div>
           <div class="grid grid-cols-2 text-base text-center">
-            <RouterLink :to="productDetailPath" class="hover:bg-[--secondary-color] py-2 border-r">
+            <RouterLink :to="`/products/${item.product_id}`" class="hover:bg-[--secondary-color] py-2 border-r">
               查看商品
             </RouterLink>
             <a href="" class="hover:bg-[--secondary-color] py-2">加到購物車</a>

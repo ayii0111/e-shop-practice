@@ -11,4 +11,5 @@ export type Product = {
   description: string // 商品描述
   category: string // 種類 (top / bottom / shoes / accessory / life)
   average_rating: number // 星等評價 (0–5)
+  is_liked?: boolean // 當前用戶是否已收藏（登入時由 RPC 回傳，未登入時不存在）
 }

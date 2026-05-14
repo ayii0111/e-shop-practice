@@ -2,7 +2,7 @@
 import { useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 
-import { categoryApi, likeApi, searchApi } from '@services'
+import { categoryApi, likeApi, productsWithLikeApi, searchApi } from '@services'
 
 import { useAuthStore } from '@stores/useAuthStore'
 
@@ -34,12 +34,47 @@ export function useProductList() {
 
     const categorys = ['all', 'top', 'bottom', 'shoes', 'accessory', 'life']
     const limit = 12
+    const userId = authStore.user?.id ?? null
 
+    // 已登入：統一走 RPC，回傳資料含 is_liked 狀態
+    if (userId) {
+      const isLikeList = newProductList === 'like'
+      const isCategory = categorys.includes(newProductList)
+      // all 傳 null 表示不篩選類別，其他類別才傳實際值
+      const categoryParam = (!isLikeList && isCategory && newProductList !== 'all')
+        ? newProductList
+        : null
+      const searchParam = (!isLikeList && !isCategory) ? newProductList : null
+
+      const [respError, resp] = await to(productsWithLikeApi(
+        userId,
+        categoryParam,
+        searchParam,
+        limit,
+        newOffset,
+      ))
+
+      if (respError) {
+        toast.add({ severity: 'error', summary: 'HTTP 錯誤', detail: respError.message })
+        loading.value = false
+        return
+      }
+
+      // like 列表需額外篩選：只顯示 is_liked = true 的商品
+      products.value = isLikeList
+        ? (resp.data as any[]).filter((p: any) => p.is_liked)
+        : resp.data as any
+      const contentRange = resp.headers['content-range']
+      total.value = Number(contentRange?.split('/')[1] ?? 0)
+      loading.value = false
+      return
+    }
+
+    // 未登入：走原本的 API，不含 is_liked
     const strategies = [
       {
         name: 'like商品 api',
         condFn: (productList: string) => productList === 'like',
-        // 傳入當前登入用戶的 user_id，而非路由參數字串
         handleFn: () => likeApi(authStore.user?.id ?? '', limit, newOffset),
       },
       {
