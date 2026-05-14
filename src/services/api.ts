@@ -42,7 +42,45 @@ export async function searchApi(keyword: string, limit: number, offset: number) 
   )
 }
 
-// ─── 登入用：透過 RPC 取得商品列表，含 is_liked 狀態 ──────────────────────────
+// ─── 收藏切換：做法 A（前端讀取後覆寫整個陣列） ──────────────────────────────
+// 流程：先讀取用戶當前的 liked_products → 在前端加入或移除商品 ID → PATCH 整個陣列回去
+//
+// ⚠️ 已知限制（做法 A 的取捨）：
+//   - 需要兩次請求（GET + PATCH），比做法 B 多一次網路往返
+//   - 有競態條件風險：若用戶在兩個分頁同時操作，後寫的會覆蓋先寫的
+//   - 選擇此做法的原因：避免過度依賴後端 RPC，前端邏輯自給自足
+//
+// 📌 日後若要改成做法 B（RPC 原子操作）：
+//   - 在 Supabase 建立 RPC 函式，使用 array_append / array_remove 操作
+//   - 前端只需傳 user_id、product_id、action（'add' | 'remove'）
+//   - 一次請求完成，無競態問題
+export async function toggleLikeApi(userId: string, productId: string, isCurrentlyLiked: boolean) {
+  // Step 1：讀取當前的 liked_products
+  const [readError, readResp] = await to(
+    supabaseApi.get(`/user_profiles?user_id=eq.${userId}&select=liked_products`),
+  ) as [Error, any]
+
+  if (readError) { throw readError }
+
+  const currentList: string[] = readResp.data?.[0]?.liked_products ?? []
+
+  // Step 2：在前端加入或移除商品 ID
+  const newList = isCurrentlyLiked
+    ? currentList.filter((id: string) => id !== productId)  // 移除
+    : [...new Set([...currentList, productId])]              // 加入（Set 防止重複）
+
+  // Step 3：PATCH 整個陣列回去
+  const [writeError] = await to(
+    supabaseApi.patch(
+      `/user_profiles?user_id=eq.${userId}`,
+      { liked_products: newList },
+    ),
+  ) as [Error, any]
+
+  if (writeError) { throw writeError }
+
+  return newList
+}
 // 對應 Supabase 函式 get_products_with_like_status
 // user_id_input 傳入當前登入用戶的 UUID
 export async function productsWithLikeApi(

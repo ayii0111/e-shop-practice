@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Image, Paginator, Skeleton } from 'primevue'
 import { useProductList } from '../ProductDisplay'
+import { toggleLikeApi } from '@services'
+import { useAuthStore } from '@stores/useAuthStore'
+import { useWarpToast } from '@util'
 
 // 吐司元件回報單純成敗結果
 // JSONView 則顯示錯誤資訊協助除錯
@@ -9,9 +12,24 @@ import { useProductList } from '../ProductDisplay'
 // 輸入搜尋關鍵字，去取得商品名稱匹配
 // 輸入 like 路由，去取得用戶like列表，並批次取得商品數據
 const { products, loading, total, offset } = useProductList()
+const authStore = useAuthStore()
 
 const imagePt = {
   image: { class: 'w-full h-full object-cover' },
+}
+
+async function handleToggleLike(productId: string, isCurrentlyLiked: boolean) {
+  if (!authStore.user?.id) { return }
+
+  const [error] = await to(toggleLikeApi(authStore.user.id, productId, isCurrentlyLiked))
+  if (error) {
+    useWarpToast('收藏操作失敗', error.message)
+    return
+  }
+
+  // 樂觀更新：直接修改本地狀態，不需重新 fetch
+  const target = products.value.find(p => p.product_id === productId)
+  if (target) { target.is_liked = !isCurrentlyLiked }
 }
 </script>
 
@@ -46,10 +64,10 @@ const imagePt = {
             <Image :pt="imagePt" :src="item.img_urls[0]" alt="Image" width="250" />
             <!-- like 標記：顯示收藏狀態（點擊寫入邏輯待實作） -->
             <div class="top-2 right-2 z-0 absolute size-[20px]">
-              <button v-if="item.is_liked" class="flex justify-center items-center w-full h-full">
+              <button v-if="item.is_liked" class="flex justify-center items-center w-full h-full" @click="handleToggleLike(item.product_id, true)">
                 <i class="pi pi-heart-fill icon"></i>
               </button>
-              <button v-else class="flex justify-center items-center w-full h-full">
+              <button v-else class="flex justify-center items-center w-full h-full" @click="handleToggleLike(item.product_id, false)">
                 <i class="pi pi-heart icon"></i>
               </button>
             </div>
