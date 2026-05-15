@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Menubar } from 'primevue'
 import { menubarProps } from './Header/menubarProps'
-import { MenubarEnd } from './Header'
 
 // #region  分頁標籤 樣式控制的功能: 嵌於 <Menubar> 元件的 slot ------------------------------
 // 當前頁面的標籤，實際上應該由 router 決定
@@ -19,11 +18,14 @@ function activateTab(tabName: string) {
   activeTabName.value = tabName
 }
 // #endregion ------------------------------
+const menubarPt = {
+  item: 'flex justify-center', // 好像是下畫線的功能讓項目歪掉，把他調回置中
+}
 </script>
 
 <template>
   <div>
-    <Menubar v-bind="menubarProps" class="px-0 py-2 border-0">
+    <Menubar v-bind="menubarProps" :pt="menubarPt" class="px-0 py-2 border-0">
       <template #start>
         <span class="py-3 h-7.5 font-[700] text-[20px]">Carol's Shop</span>
       </template>

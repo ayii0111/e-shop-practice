@@ -25,7 +25,7 @@ export function useProductList() {
 
   const route = useRoute()
   const products = ref({}) as Ref<Product[]>
-  const loading = ref(false)
+  const loading = ref(true)  // 初始為 true，確保第一次載入時顯示 Skeleton
   const total = ref(0)
   const offset = ref(0)
 

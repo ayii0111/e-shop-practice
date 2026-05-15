@@ -38,7 +38,7 @@ async function handleToggleLike(productId: string, isCurrentlyLiked: boolean) {
     <div class="flex flex-col items-center gap-x-[22px] gap-y-[14px] sm:grid sm:grid-cols-2 lg:grid-cols-3 auto-rows-min">
       <!-- loading 骨架屏 -->
       <template v-if="loading">
-        <div v-for="n in 6" :key="n" class="border border-[--secondary-color] rounded max-sm:w-[291px] sm:max-w-[291px]">
+        <div v-for="n in 12" :key="n" class="border border-[--secondary-color] rounded max-sm:w-[291px] sm:max-w-[291px]">
           <!-- 圖片骨架 -->
           <Skeleton height="200px" class="rounded-none" />
           <!-- 內容骨架 -->
