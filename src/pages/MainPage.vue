@@ -6,7 +6,7 @@
   <div>
     <Header />
     <RouterView data-role="Body" />
-    <Footer />
+    <Footer class="hidden md:block" />
   </div>
 </template>
 

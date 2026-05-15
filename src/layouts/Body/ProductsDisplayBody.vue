@@ -18,8 +18,8 @@ const breadcrumbItems = computed(() => {
 </script>
 
 <template>
-  <div class="max-sm:flex max-sm:flex-col max-sm:items-center">
-    <Breadcrumb :home="home" :model="breadcrumbItems" class="bg-[--gray-bg] mb-4 px-4 py-3 max-sm:w-full">
+  <div class="max-sm:flex max-sm:flex-col max-sm:items-center ">
+    <Breadcrumb :home="home" :model="breadcrumbItems" class="max-sm:hidden bg-[--gray-bg] mb-4 px-4 py-3 max-sm:w-full">
       <template #item="{ item }">
         {{ item.label }}
       </template>
