@@ -156,43 +156,63 @@ const messagePt = {
 </script>
 
 <template>
-  <div class="coupon-panel">
+  <div class=" coupon-panel">
     <!-- 優惠券列表 -->
     <div class="space-y-4">
       <Message v-for="coupon in coupons" :key="coupon.id" :pt="messagePt" :dt="messageDt" :severity="getSeverity(coupon.status)" class="cursor-pointer coupon-card" :closable="false" @click="copyCouponCode(coupon)">
-        <div class="flex md:flex-row flex-row-reverse justify-between items-center gap-2 p-4 w-full">
-          <div class="flex items-center gap-2 w-full">
-            <div data-section="左側圖標" class="hidden md:block flex-shrink-0 mr-2">
+        <div class="flex items-center justify-between flex-row-reverse  md:flex-row gap-2 p-4 w-full">
+          <div class="flex items-center gap-2 ">
+            <!-- 左側圖標 -->
+            <div class="hidden md:block flex-shrink-0 mr-4">
               <font-awesome-icon :icon="['fas', 'ticket']" class="text-3xl" />
             </div>
-            <div data-section="中間內容區" class="flex flex-col sm:grid sm:grid-cols-[1fr_1fr] w-full">
-              <div class="flex flex-col items-start">
-                <div class="flex items-center mb-1">
-                  <h3 class="mr-2 font-bold text-xs sm:text-xl">
-                    {{ coupon.title }}
-                  </h3>
-                  <button class="text-gray-400 hover:text-primary transition-colors">
-                    <font-awesome-icon :icon="['fas', 'copy']" class="text-sm" />
-                  </button>
-                </div>
-                <div data-section="活動期限" class="inline-block text-gray-400 sm:text-xs scale-[0.8] sm:scale-100 origin-top-left">
-                  <!-- 使用期限：已滿足使用期限時只顯示結束時間，未滿足時顯示開始和結束時間 -->
+
+            <!-- 中間內容區 -->
+            <div class="">
+              <!-- 標題 -->
+              <div class="mb-1 flex items-center">
+                <h3 class="font-bold text-xl mr-2">
+                  {{ coupon.title }}
+                </h3>
+                <button class="text-gray-400 hover:text-primary transition-colors">
+                  <font-awesome-icon :icon="['fas', 'copy']" class="text-sm" />
+                </button>
+              </div>
+
+              <!-- 詳細資訊 -->
+              <div class="gap-x-6 gap-y-1 grid grid-cols-1 md:grid-cols-3 px-2 text-gray-400 text-xs">
+                <!-- 使用期限：已滿足使用期限時只顯示結束時間，未滿足時顯示開始和結束時間 -->
+                <div>
                   <span v-if="isWithinValidPeriod(coupon)">
-                    <span class="whitespace-nowrap">活動結束於: {{ formatDate(coupon.endDate) }}</span>
+                    <span>活動結束於：</span>
+                    {{ formatDate(coupon.endDate) }}
                   </span>
                   <span v-else>
-                    <span class="whitespace-nowrap">活動開始於: {{ formatDate(coupon.startDate) }}</span>
+                    <span>活動開始於：</span>
+                    {{ formatDate(coupon.startDate) }}
                   </span>
                 </div>
               </div>
-              <div v-if="isWithinValidPeriod(coupon)" data-section="剩餘數量" class=" flex justify-start items-center text-gray-400 sm:text-xs scale-[0.9] sm:scale-100 origin-top-left">
-                <span>剩餘數量：</span>
-                <span>{{ coupon.remainingCount }} </span>
-              </div>
+            </div>
+            <!-- 已使用：僅在使用期限內顯示 -->
+            <div v-if="isWithinValidPeriod(coupon)">
+              <span>已使用：</span>
+              <span>{{ coupon.usedCount }} / {{ coupon.totalLimit }}</span>
+            </div>
+
+            <!-- 剩餘數量：僅在使用期限內顯示 -->
+            <div v-if="isWithinValidPeriod(coupon)">
+              <span>剩餘數量：</span>
+              <span :class="{
+                'text-red-400': coupon.remainingCount < 100,
+                'text-gray-400': coupon.remainingCount >= 100,
+              }">
+                {{ coupon.remainingCount }}
+              </span>
             </div>
           </div>
           <!-- 右側折扣標籤 -->
-          <div v-if="coupon.discount" class="flex-shrink-0 bg-white shadow-md p-2 sm:px-4 sm:py-3 rounded-lg text-center">
+          <div v-if="coupon.discount" class="flex-shrink-0 bg-white shadow-md px-4 py-3 rounded-lg text-center">
             <div class="font-bold text-primary text-2xl whitespace-nowrap">
               {{ coupon.discount }}
             </div>

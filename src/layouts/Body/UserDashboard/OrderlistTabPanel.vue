@@ -166,7 +166,7 @@ const orders = ref<Order[]>([
 ])
 
 // 當前選擇的狀態篩選
-const selectedStatus = ref<OrderStatus | 'all'>('all')
+const selectedStatus = ref<string>('all')
 
 // 狀態選項
 const statusOptions = [
@@ -308,7 +308,7 @@ function requestRefund(order: Order) {
   <div class="order-panel">
     <!-- 狀態篩選標籤 -->
     <div class="flex flex-wrap gap-2 mb-6">
-      <Button v-for="option in statusOptions" :key="option.value" :label="option.label" :severity="selectedStatus === option.value ? 'primary' : 'secondary'" :outlined="selectedStatus !== option.value" size="small" @click="selectedStatus = option.value as any">
+      <Button v-for="option in statusOptions" :key="option.value" :label="option.label" :severity="selectedStatus === option.value ? 'primary' : 'secondary'" :outlined="selectedStatus !== option.value" size="small" @click="selectedStatus = option.value">
         <template #icon>
           <font-awesome-icon :icon="option.icon" class="mr-2" />
         </template>
