@@ -15,5 +15,8 @@ export default {
 
     },
   },
-  plugins: [twPrimeui],
+  plugins: [
+    twPrimeui,
+    require('tailwind-scrollbar-hide'),
+  ],
 }

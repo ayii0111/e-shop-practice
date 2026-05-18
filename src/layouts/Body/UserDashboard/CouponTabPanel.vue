@@ -175,19 +175,17 @@ const messagePt = {
                     <font-awesome-icon :icon="['fas', 'copy']" class="text-sm" />
                   </button>
                 </div>
-                <div data-section="活動期限" class="inline-block text-gray-400 sm:text-xs scale-[0.8] sm:scale-100 origin-top-left">
+                <div data-section="活動期限" class="flex items-center justify-center">
                   <!-- 使用期限：已滿足使用期限時只顯示結束時間，未滿足時顯示開始和結束時間 -->
-                  <span v-if="isWithinValidPeriod(coupon)">
-                    <span class="whitespace-nowrap">活動結束於: {{ formatDate(coupon.endDate) }}</span>
-                  </span>
-                  <span v-else>
-                    <span class="whitespace-nowrap">活動開始於: {{ formatDate(coupon.startDate) }}</span>
-                  </span>
+                  <span v-if="isWithinValidPeriod(coupon)" class=" inline-block text-gray-400 sm:text-xs scale-[0.8] sm:scale-100 origin-left whitespace-nowrap">
+                    活動結束於: {{ formatDate(coupon.endDate) }}</span>
+                  <span v-else class="inline-block text-gray-400 sm:text-xs scale-[0.8] sm:scale-100 origin-left whitespace-nowrap">
+                    活動開始於: {{ formatDate(coupon.startDate) }}</span>
                 </div>
               </div>
-              <div v-if="isWithinValidPeriod(coupon)" data-section="剩餘數量" class=" flex justify-start items-center text-gray-400 sm:text-xs scale-[0.9] sm:scale-100 origin-top-left">
-                <span>剩餘數量：</span>
-                <span>{{ coupon.remainingCount }} </span>
+              <div v-if="isWithinValidPeriod(coupon)" data-section="剩餘數量" class=" flex justify-start items-center">
+                <span class=" text-gray-400 sm:text-xs scale-[0.9] sm:scale-100 origin-left">剩餘數量：</span>
+                <span class=" text-gray-400 sm:text-xs scale-[0.9] sm:scale-100 origin-left">{{ coupon.remainingCount }} </span>
               </div>
             </div>
           </div>

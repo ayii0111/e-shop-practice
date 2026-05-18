@@ -52,7 +52,7 @@ const checked = ref(false)
 </script>
 
 <template>
-  <div class="mx-auto py-2 max-w-[1000px] min-h-[700px]">
+  <div class="relative mx-auto pt-2 max-w-[1000px] min-h-[700px]">
     <DataView :value="products">
       <template #list="slotProps">
         <div class="flex flex-col">
@@ -103,17 +103,18 @@ const checked = ref(false)
       </template>
     </DataView>
 
-    <Divider />
-
-    <div class="flex justify-between items-center m-4">
-      <div class="flex items-center">
-        <Checkbox v-model="selectAll" inputId="select-all" class="ml-4" binary />
-        <label class="ml-2" for="select-all"> 全選 </label>
-      </div>
-      <div>
-        總金額: 0 <Button class="mr-2 ml-8 border-none" :dt="buttonDt" size="small">
-          去買單
-        </Button>
+    <div class="bottom-0 sticky !bg-white">
+      <Divider />
+      <div class="flex justify-between items-center pb-2 px-4">
+        <div class="flex items-center">
+          <Checkbox v-model="selectAll" inputId="select-all" class="ml-4" binary />
+          <label class="ml-2" for="select-all"> 全選 </label>
+        </div>
+        <div>
+          總金額: 0 <Button class="mr-2 ml-8 border-none" :dt="buttonDt" size="small">
+            去買單
+          </Button>
+        </div>
       </div>
     </div>
   </div>

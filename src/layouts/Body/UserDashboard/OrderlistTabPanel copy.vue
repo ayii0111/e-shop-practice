@@ -2,11 +2,8 @@
 import { computed, ref } from 'vue'
 import { Accordion, AccordionContent, AccordionHeader, AccordionPanel, Button, Divider, Tag } from 'primevue'
 import { useToast } from 'primevue/usetoast'
-import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
 const toast = useToast()
-const breakpoints = useBreakpoints(breakpointsTailwind)
-const isDesktop = breakpoints.greaterOrEqual('md') // 自動響應的 Ref<boolean>
 
 // 訂單狀態類型
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
@@ -305,58 +302,59 @@ function requestRefund(order: Order) {
     life: 3000,
   })
 }
-
-const accordionContentPt = {
-  content: '!px-3',
-}
 </script>
 
 <template>
-  <div class="mx-auto my-0 max-w-[1200px]">
+  <div class="order-panel">
     <!-- 狀態篩選標籤 -->
-    <div data-section="訂單狀態導航" class="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
-      <Button v-for="option in statusOptions" :key="option.value" class="shrink-0" :label="option.label" :severity="selectedStatus === option.value ? 'primary' : 'secondary'" :outlined="selectedStatus !== option.value" size="small" @click="selectedStatus = option.value">
+    <div class="flex flex-wrap gap-2 mb-6">
+      <Button v-for="option in statusOptions" :key="option.value" :label="option.label" :severity="selectedStatus === option.value ? 'primary' : 'secondary'" :outlined="selectedStatus !== option.value" size="small" @click="selectedStatus = option.value">
         <template #icon>
           <font-awesome-icon :icon="option.icon" class="mr-2" />
         </template>
       </Button>
     </div>
-    <div v-if="filteredOrders.length > 0" data-section="某一訂單種類的訂單列表" class="space-y-4">
+
+    <!-- 訂單列表 -->
+    <div v-if="filteredOrders.length > 0" class="space-y-4">
       <Accordion :multiple="true" class="order-accordion">
-        <AccordionPanel v-for="order in filteredOrders" :key="order.id" class="max-sm:!mb-1" :value="order.id">
-          <AccordionHeader data-section="手風琴的表頭" class="py-2">
-            <div class="flex items-center pr-2 sm:pr-4 w-full">
-              <font-awesome-icon :icon="getStatusIcon(order.status)" class="mr-2 sm:mr-4 text-2xl" />
-              <div class="flex max-sm:flex-wrap justify-between items-center w-full">
-                <div data-section="訂單編號、訂單成立時間" class="flex items-center gap-4">
-                  <div>
-                    <div class="flex items-center gap-2">
-                      <span class="font-bold text-sm">{{ order.orderNumber }}</span>
-                      <button class="text-gray-400 hover:text-primary transition-colors" @click.stop="copyOrderNumber(order.orderNumber)">
-                        <font-awesome-icon :icon="['fas', 'copy']" class="text-sm" />
-                      </button>
-                    </div>
-                    <div class="text-gray-600 text-sm scale-[0.8] sm:scale-100 origin-left">
-                      {{ formatDate(order.orderDate) }}
-                    </div>
+        <AccordionPanel v-for="order in filteredOrders" :key="order.id" :value="order.id">
+          <!-- 訂單標題 -->
+          <AccordionHeader>
+            <div class="flex justify-between items-center pr-4 w-full">
+              <!-- 左側：訂單資訊 -->
+              <div class="flex items-center gap-4">
+                <font-awesome-icon :icon="getStatusIcon(order.status)" class="text-2xl" />
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-lg">{{ order.orderNumber }}</span>
+                    <button class="text-gray-400 hover:text-primary transition-colors" @click.stop="copyOrderNumber(order.orderNumber)">
+                      <font-awesome-icon :icon="['fas', 'copy']" class="text-sm" />
+                    </button>
+                  </div>
+                  <div class="text-gray-600 text-sm">
+                    {{ formatDate(order.orderDate) }}
                   </div>
                 </div>
-                <div data-section="訂單金額、訂單商品數量" class="flex items-center gap-4">
-                  <div class="max-sm:flex max-sm:justify-between max-sm:items-center text-right">
-                    <div class="font-bold text-primary text-sm">
-                      {{ formatCurrency(order.finalAmount) }}
-                    </div>
-                    <div class="text-gray-600 scale-[0.8] sm:scale-100 origin">
-                      共 {{ order.items.length }} 件商品
-                    </div>
+              </div>
+
+              <!-- 右側：狀態和金額 -->
+              <div class="flex items-center gap-4">
+                <div class="text-right">
+                  <div class="font-bold text-primary text-lg">
+                    {{ formatCurrency(order.finalAmount) }}
                   </div>
-                  <Tag v-if="isDesktop" :severity="getStatusSeverity(order.status)" :value="getStatusText(order.status)" />
+                  <div class="text-gray-600 text-sm">
+                    共 {{ order.items.length }} 件商品
+                  </div>
                 </div>
+                <Tag :severity="getStatusSeverity(order.status)" :value="getStatusText(order.status)" />
               </div>
             </div>
           </AccordionHeader>
 
-          <AccordionContent data-section="手風琴的內容" :pt="accordionContentPt">
+          <!-- 訂單詳細內容 -->
+          <AccordionContent>
             <div class="space-y-4 pt-4">
               <!-- 商品列表 -->
               <div>
@@ -370,15 +368,15 @@ const accordionContentPt = {
                         <font-awesome-icon :icon="['fas', 'box']" class="text-gray-400" />
                       </div>
                       <div>
-                        <div class="max-sm:max-w-[183px] font-medium truncate">
+                        <div class="font-medium">
                           {{ item.productName }}
                         </div>
-                        <div class="text-gray-600 text-sm scale-[0.8] sm:scale-100 origin-left">
+                        <div class="text-gray-600 text-sm">
                           {{ formatCurrency(item.price) }} × {{ item.quantity }}
                         </div>
                       </div>
                     </div>
-                    <div class="max-sm:hidden font-semibold whitespace-nowrap">
+                    <div class="font-semibold">
                       {{ formatCurrency(item.subtotal) }}
                     </div>
                   </div>
@@ -430,11 +428,9 @@ const accordionContentPt = {
                       <font-awesome-icon :icon="['fas', 'barcode']" class="text-gray-400" />
                       <span>物流編號：{{ order.trackingNumber }}</span>
                     </div>
-                    <div v-if="order.estimatedDelivery" class="flex items-start gap-2">
-                      <font-awesome-icon :icon="['fas', 'calendar']" class="mt-1 text-gray-400" />
-                      <div class="flex">
-                        <span class="whitespace-nowrap">預計送達：</span> <span>{{ formatDate(order.estimatedDelivery) }}</span>
-                      </div>
+                    <div v-if="order.estimatedDelivery" class="flex items-center gap-2">
+                      <font-awesome-icon :icon="['fas', 'calendar']" class="text-gray-400" />
+                      <span>預計送達：{{ formatDate(order.estimatedDelivery) }}</span>
                     </div>
                   </div>
                 </div>
@@ -482,6 +478,11 @@ const accordionContentPt = {
 </template>
 
 <style scoped lang="scss">
+.order-panel {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 // 自訂 Accordion 樣式
 :deep(.order-accordion) {
   .p-accordionpanel {
