@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { Avatar, Button, Card, Divider, InputMask, InputText, Message, Textarea } from 'primevue'
+import { Avatar, Button, Card, Divider, InputMask, InputText, Message, Skeleton, Textarea } from 'primevue'
 // import { useToast } from 'primevue/usetoast'
 import { debugLog, useWarpToast } from '@util'
 import { supabaseApi } from '@services'
@@ -55,7 +55,7 @@ const userProfile = ref<UserProfile>({
 
 // 編輯模式
 const isEditing = ref(false)
-const loading = ref(false)
+const loading = ref(true) // 初始為 true，確保第一次載入時顯示 Skeleton
 // accessToken 統一從 authStore 取得，不再自行管理
 const accessToken = computed(() => authStore.accessToken)
 
@@ -237,8 +237,20 @@ function onSessionExpired() {
     <Card>
       <!-- 頭部：頭像和基本資訊 -->
       <template #header>
-        <!-- <div class="flex items-center gap-6 bg-gradient-to-r from-blue-50 to-purple-50 p-6"> -->
-        <div class="flex flex-wrap items-center gap-6 bg-gray-100 p-6">
+        <!-- Skeleton：資料載入中 -->
+        <div v-if="loading" class="flex flex-wrap items-center gap-6 bg-gray-100 p-6">
+          <Skeleton shape="circle" size="100px" />
+          <div class="flex-1 space-y-3">
+            <Skeleton height="2rem" width="40%" />
+            <Skeleton height="1rem" width="60%" />
+            <div class="flex gap-4">
+              <Skeleton height="1.5rem" width="80px" class="rounded-full" />
+              <Skeleton height="1rem" width="120px" />
+            </div>
+          </div>
+        </div>
+        <!-- 實際頭部 -->
+        <div v-else class="flex flex-wrap items-center gap-6 bg-gray-100 p-6">
           <Avatar :image="userProfile.avatar_url" size="xlarge" shape="circle" class="shadow-lg border-4 border-white" />
           <div class="flex-1">
             <h2 class="mb-2 font-bold text-2xl">
@@ -270,7 +282,27 @@ function onSessionExpired() {
 
       <!-- 內容：詳細資料 -->
       <template #content>
-        <div class="space-y-6">
+        <!-- Skeleton：資料載入中 -->
+        <div v-if="loading" class="space-y-6">
+          <div>
+            <Skeleton height="1.5rem" width="80px" class="mb-4" />
+            <div class="gap-4 grid grid-cols-1 md:grid-cols-2">
+              <Skeleton v-for="n in 5" :key="n" height="3rem" />
+            </div>
+          </div>
+          <Divider />
+          <div>
+            <Skeleton height="1.5rem" width="80px" class="mb-4" />
+            <div class="gap-4 grid grid-cols-1 md:grid-cols-2">
+              <Skeleton height="3rem" />
+              <Skeleton height="3rem" />
+              <Skeleton height="5rem" class="md:col-span-2" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 實際內容 -->
+        <div v-else class="space-y-6">
           <!-- 基本資料區塊 -->
           <div>
             <h3 class="flex items-center gap-2 mb-4 font-semibold text-gray-700 text-lg">

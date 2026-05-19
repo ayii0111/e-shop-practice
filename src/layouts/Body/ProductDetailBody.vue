@@ -2,7 +2,10 @@
 import { Breadcrumb, Button, Galleria, InputNumber, Rating, Tag } from 'primevue'
 import { _images } from './ProductDisplay/imgServer'
 
-const value3 = ref(1)
+const route = useRoute()
+
+// #region: <InputNumber> ------------------------------
+const quantity = ref(1)
 const inputNumberDT = ref({
   root: {
     buttonWidth: '30px',
@@ -14,24 +17,27 @@ const inputNumberPT = ref({
     root: 'w-[50px] text-center focus:border focus:border-[rgba(52,58,64,.3)] focus:ring-2 ring-[rgba(52,58,64,.1)]',
   },
 })
+// #endregion ------------------------------
 
 const tagDT = ref({
   root: {
     padding: '0 4px',
   },
 })
-const buttonDT = ref({
-  root: {
-    iconOnlyWidth: '25px',
+// const buttonDT = ref({
+//   root: {
+//     iconOnlyWidth: '25px',
 
-  },
-})
-const buttonPT = ref({
-  icon: 'text-sm',
-})
-const value = ref(3)
+//   },
+// })
+// const buttonPT = ref({
+//   icon: 'text-sm',
+// })
+
+const ratingLevel = ref(3)
 const isLiked = ref(true)
 
+// #region: <Galleria> 畫廊元件 ------------------------------
 const responsiveOptions = ref([
   {
     breakpoint: '1300px',
@@ -44,13 +50,26 @@ const responsiveOptions = ref([
 ])
 
 const images = ref(_images)
+// #endregion ------------------------------
 
-const productCategory = {
+// const items = ref([
+//   { icon: ['fas', 'gift'], category: '全部商品', tabName: 'all', path: '/products-display-body/product-list/all' },
+//   { icon: ['fas', 'shirt'], category: '上半身', tabName: 'top', path: '/products-display-body/product-list/top' },
+//   { icon: ['fas', 'socks'], category: '下半身', tabName: 'bottom', path: '/products-display-body/product-list/bottom' },
+//   { icon: ['fas', 'shoe-prints'], category: '鞋', tabName: 'shoes', path: '/products-display-body/product-list/shoes' },
+//   { icon: ['fas', 'democrat'], category: '飾品', tabName: 'accessory', path: '/products-display-body/product-list/accessory' },
+//   { icon: ['fas', 'shopping-bag'], category: '配件', tabName: 'life', path: '/products-display-body/product-list/life' },
+// ])
+
+// #region: <Breadcrumb> ------------------------------
+// 依賴: 當前商品詳情 api 數據的: 名稱, 商品種類
+// 商品種類對應的 path
+//
+const topOfBreadcrumbItems = {
   label: 'TOP',
   to: '/products-display-body/product-list/top',
 }
-
-const route = useRoute()
+// 依賴: 當前商品詳情 api 數據的: 名稱
 const breadcrumbItems = computed(() => {
   // 取得當前的 route-path
   // 格式 ['products', '01']
@@ -66,11 +85,12 @@ const breadcrumbItems = computed(() => {
     disabled: () => true,
   }]
 })
+// #endregion ------------------------------
 </script>
 
 <template>
   <div>
-    <Breadcrumb :home="productCategory" :model="breadcrumbItems" class="bg-[--gray-bg] mb-4 px-4 py-3 max-sm:w-full">
+    <Breadcrumb :home="topOfBreadcrumbItems" :model="breadcrumbItems" class="bg-[--gray-bg] mb-4 px-4 py-3 max-sm:w-full">
       <template #item="{ item }">
         <RouterLink :to="item.to">
           <span> {{ item.label }} </span>
@@ -83,7 +103,7 @@ const breadcrumbItems = computed(() => {
     </Breadcrumb>
     <div class="max-sm:flex max-sm:flex-col md:grid md:grid-cols-12 pb-16">
       <div class="md:col-span-7">
-        <Galleria :value="images" :responsiveOptions="responsiveOptions" :numVisible="5" containerStyle="max-width: 100%;">
+        <Galleria :value="images" :responsiveOptions :numVisible="5" containerStyle="max-width: 100%;">
           <template #item="slotProps">
             <!-- <img class="max-h-[calc(100vh-138px-92px-32px)]" :src="slotProps.item.itemImageSrc" :alt="slotProps.item.alt" /> -->
             <img :src="slotProps.item.itemImageSrc" :alt="slotProps.item.alt" />
@@ -104,8 +124,17 @@ const breadcrumbItems = computed(() => {
         <p class="mb-4 text-base">
           型號：tkt19379
         </p>
-        <div class="flex items-center mb-4">
-          <Rating v-model="value" readonly class="" />()
+        <div class="flex items-center justify-between mb-4">
+          <Rating v-model="ratingLevel" readonly class="" />
+          <span class="">
+            <button v-if="isLiked" class="flex justify-center items-center w-full h-full text-[var(--danger-color)]">
+              <i class="pi pi-heart-fill icon"></i>
+            </button>
+            <button v-else class="flex justify-center items-center w-full h-full text-[var(--danger-color)]">
+              <i class="pi pi-heart icon"></i>
+            </button>
+
+          </span>
         </div>
 
         <hr class="mb-4">
@@ -124,7 +153,7 @@ const breadcrumbItems = computed(() => {
           </p>
         </div>
         <div class="flex items-center mt-4">
-          <InputNumber v-model="value3" :dt="inputNumberDT" :pt="inputNumberPT" class="mr-4 h-8" inputId="horizontal-buttons" showButtons buttonLayout="horizontal" :min="0" :max="99">
+          <InputNumber v-model="quantity" :dt="inputNumberDT" :pt="inputNumberPT" class="mr-4 h-8" inputId="horizontal-buttons" showButtons buttonLayout="horizontal" :min="0" :max="99">
             <template #incrementbuttonicon>
               <span class="pi pi-plus" />
             </template>
@@ -134,13 +163,7 @@ const breadcrumbItems = computed(() => {
           </InputNumber> 庫存 &lt; 3
         </div>
         <div class="flex items-center mt-14 mb-4 pr-4">
-          <Tag severity="danger" value="">
-            <span v-if="isLiked"> <i class="text-lg pi pi-heart-fill"></i></span>
-            <span v-else> <i class="text-lg pi pi-heart"></i></span>
-            Like
-          </Tag>
-
-          <span class="flex gap-1 ml-10 shrink-0">
+          <span class="flex gap-1  shrink-0">
             <a href=""><img src="@icon/link.png" class="size-8" alt=""></a>
             <a href=""><img src="@icon/line.svg" class="size-8" alt=""></a>
             <a href=""><img src="@icon/facebook.svg" class="size-8" alt=""></a>

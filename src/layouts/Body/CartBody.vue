@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { Button, Checkbox, Column, DataTable, DataView, Divider, InputNumber } from 'primevue'
-import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
+import { Button, Checkbox, DataView, Divider, InputNumber } from 'primevue'
 import { ProductService } from './LikeList'
 
-const breakpoints = useBreakpoints(breakpointsTailwind)
-const isDesktop = breakpoints.greaterOrEqual('md') // 自動響應的 Ref<boolean>
+// #region: <DataView> ------------------------------
+const products = ref()
+
+// 依賴: 購物車商品數據
+// product_id, quantity, 原價, 售價
 onMounted(() => {
   ProductService.getProductsSmall().then(data => (products.value = data))
 })
+// #endregion ------------------------------
 
-const products = ref()
-
+// <DataView> 內部的插槽應該要直接依賴其本身輸入的數據
 const quantity = ref(1)
 const inputNumberDt = {
   root: { buttonWidth: '2rem' },
@@ -21,25 +23,6 @@ const inputNumberPt = {
   },
 }
 
-const inputNumberDt2 = {
-  root: { buttonWidth: '2.5rem' },
-}
-const inputNumberPt2 = {
-  pcInputText: {
-    root: 'py-1 px-2 min-w-1 w-20 text-center',
-  },
-}
-
-// 這是個別 Column 元件，修改 pt 的方法
-// const columnPt = {
-//   columnHeaderContent: 'flex justify-center',
-// }
-const dataTablePT = {
-  column: {
-    columnHeaderContent: 'justify-center', // 這層才是實際包住文字的 flex container
-    bodyCell: 'text-center',
-  },
-}
 const buttonDt = {
   //  var(--p-surface-100)
   root: {
@@ -68,14 +51,14 @@ const checked = ref(false)
               <div class="flex flex-1 justify-between sm:grid sm:grid-cols-[3fr_5fr]">
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2">
                   <div>
-                    <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.category }}</span>
-                    <div class="mt-2 font-medium text-lg">
+                    <div class="font-medium text-lg mt-0 ">
                       {{ item.name }}
                     </div>
+                    <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.category }}</span>
                   </div>
                 </div>
                 <div class="sm:grid sm:grid-cols-[2fr_3fr]">
-                  <div data-label="數量" class="flex flex-col items-center mb-4">
+                  <div data-label="數量" class="flex flex-col items-center max-sm:mb-4 pt-1">
                     <InputNumber v-model="quantity" :dt="inputNumberDt" :pt="inputNumberPt" class="mb-2" inputId="horizontal-buttons" showButtons buttonLayout="horizontal" :step="1" :min="1" :max="99">
                       <template #incrementbuttonicon>
                         <span class="pi pi-plus" />
@@ -86,13 +69,19 @@ const checked = ref(false)
                     </InputNumber>
                     <span class="text-center"> 當前總數: 8</span>
                   </div>
-                  <div data-label="價格" class="flex flex-col justify-center items-end sm:items-start sm:mr-8 sm:ml-8">
-                    <span class="mr-3 sm:mr-0 mb-2 font-semibold text-lg">${{ item.price }}</span>
-                    <span class="mr-3 sm:mr-0 text-gray-500 whitespace-nowrap">原價: 988</span>
-                    <!-- <div class="flex md:flex-row flex-row-reverse gap-2">
-                    </div> -->
+                  <div v-if="true">
+                    <div data-label="價格" class="flex flex-col justify-center items-end sm:items-start sm:mr-8 sm:ml-8">
+                      <span class="mr-3 sm:mr-0 mb-2 font-semibold text-lg">${{ item.price }}</span>
+                      <span class="mr-3 sm:mr-0 text-gray-500 whitespace-nowrap">原價: 988</span>
+                    </div>
+                  </div>
+                  <div v-else class="flex max-sm:justify-end items-center">
+                    <div data-label="價格" class="flex flex-col justify-center items-end sm:items-start sm:mr-8 sm:ml-8">
+                      <span class="mr-3 sm:mr-0 mb-2 font-semibold text-lg">$988</span>
+                    </div>
                   </div>
                 </div>
+
                 <Button icon="pi pi-times" variant="text" size="small" rounded severity="secondary" aria-label="Cancel" class="top-2 md:top-1 right-0 absolute">
                   <template #loadingicon=""></template>
                 </Button>

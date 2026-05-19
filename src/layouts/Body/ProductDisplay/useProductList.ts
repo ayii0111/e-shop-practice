@@ -1,5 +1,6 @@
 // composables/useProductList.js
-import { useRoute } from 'vue-router'
+import type { RouteParams } from 'vue-router'
+
 import { useToast } from 'primevue/usetoast'
 
 import { categoryApi, likeApi, productsWithLikeApi, searchApi } from '@services'
@@ -19,17 +20,16 @@ import type { Product } from '@services/type'
 
 // toast.removeAll();
 
-export function useProductList() {
+export function useProductList (getProductList: () => string) {
   const toast = useToast()
   const authStore = useAuthStore()
 
-  const route = useRoute()
   const products = ref({}) as Ref<Product[]>
-  const loading = ref(true)  // 初始為 true，確保第一次載入時顯示 Skeleton
+  const loading = ref(true) // 初始為 true，確保第一次載入時顯示 Skeleton
   const total = ref(0)
   const offset = ref(0)
 
-  watch([() => route.params.productList as string, offset], async ([newProductList, newOffset]) => {
+  watch([() => getProductList(), offset], async ([newProductList, newOffset]) => {
     window.scrollTo({ top: 0, behavior: 'instant' })
 
     const categorys = ['all', 'top', 'bottom', 'shoes', 'accessory', 'life']

@@ -50,7 +50,6 @@ function decideFlexPosition(index: number) {
 <template>
   <div class="md:gap-[30px] grid grid-cols-1 md:grid-cols-2 text-center">
     <div v-for="item in LRBox" :key="item.key" class="flex flex-auto" :class="`${decideFlexPosition(item.key).value}`">
-      <!-- <div v-for="item in LRBox" :key="item.key" class="flex flex-col flex-auto"> -->
       <div class="bg-cover mb-6 py-[160px]" :class="item.bgPosition" :style="{ backgroundImage: `url(${item.imageUrl})` }">
         <h3 class="text-shadow h3">
           {{ item.modelTitle }}

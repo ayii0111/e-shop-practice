@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import { Listbox } from 'primevue'
-import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
-const userOptions = ref([
+const router = useRouter()
+const route = useRoute()
+
+// #region: <Listbox> 左側分頁導航欄 ------------------------------
+const options = ref([
   { label: '個人資料', icon: ['fas', 'address-card'], name: 'ProfileTabPanel' },
   { label: '我的優惠券 (2)', icon: ['fas', 'ticket'], name: 'CouponTabPanel' },
   { label: '我的訂單', icon: ['fas', 'file-lines'], name: 'OrderlistTabPanel' },
 ])
 
-const router = useRouter()
-const route = useRoute()
-
-// 從當前路由名稱反推選中的選項，確保從外部路由過來時狀態也能同步
+// 依賴: route.name, router.push, selectedOptiond本身
 const selectedOption = computed({
+  // 從當前路由名稱反推選中的選項，確保從外部路由過來時狀態也能同步
+
   get() {
-    return userOptions.value.find(opt => opt.name === route.name) ?? null
+    return options.value.find(opt => opt.name === route.name) ?? null
   },
   set(newValue) {
     // newValue 為 null 代表點擊了已選中的選項（Listbox 的取消選取行為）
@@ -23,8 +25,7 @@ const selectedOption = computed({
     router.push({ name: newValue.name })
   },
 })
-
-const dtListbox = {
+const listboxDt = {
   root: {
     borderColor: 'opacity',
     shadow: 0,
@@ -41,19 +42,12 @@ const dtListbox = {
     selectedFocusColor: 'white',
   },
 }
-
-// #region  左側欄在小裝置時隱藏:  ------------------------------
-const breakpoints = useBreakpoints(breakpointsTailwind)
-const isDesktop = breakpoints.greaterOrEqual('lg')
 // #endregion ------------------------------
 </script>
 
 <template>
   <div class="flex md:p-4">
-    <!-- <div class="border-2 rounded-md"> -->
-    <div v-if="isDesktop">
-      <Listbox v-model="selectedOption" :dt="dtListbox" :options="userOptions" optionLabel="label" :metaKeySelection="true" class="w-40" />
-    </div>
+    <Listbox v-model="selectedOption" :dt="listboxDt" :options optionLabel="label" :metaKeySelection="true" class="max-lg:hidden  w-40" />
     <div class="w-full">
       <RouterView data-role="Panel" class="w-full min-h-[550px] md:px-4" />
     </div>

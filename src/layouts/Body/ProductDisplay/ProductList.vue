@@ -11,7 +11,13 @@ import { useWarpToast } from '@util'
 // 輸入類別，去取得特定類別商品列表
 // 輸入搜尋關鍵字，去取得商品名稱匹配
 // 輸入 like 路由，去取得用戶like列表，並批次取得商品數據
-const { products, loading, total, offset } = useProductList()
+const route = useRoute()
+// 不可以直接用此種方式，雖然 route 是 reactive 其 params 也具有響應性
+// 這樣不行  const { products, loading, total, offset } = useProductList(route.params)
+// 這樣可以 const { products, loading, total, offset } = useProductList(route)
+// watch 要監聽 reactive 物件時，不能先把屬性直接取出！！！驗證一下 ⚠️⚠️⚠️
+const { products, loading, total, offset } = useProductList(() => route.params.productList as string)
+
 const authStore = useAuthStore()
 
 const imagePt = {
@@ -36,33 +42,28 @@ async function handleToggleLike(productId: string, isCurrentlyLiked: boolean) {
 <template>
   <div>
     <div class="flex flex-col items-center gap-x-[22px] gap-y-[14px] sm:grid sm:grid-cols-2 lg:grid-cols-3 auto-rows-min">
-      <!-- loading 骨架屏 -->
-      <template v-if="loading">
+      <template v-if="loading" data-section="loading 骨架屏">
         <div v-for="n in 12" :key="n" class="border border-[--secondary-color] rounded max-sm:w-[291px] sm:max-w-[291px]">
-          <!-- 圖片骨架 -->
-          <Skeleton height="200px" class="rounded-none" />
-          <!-- 內容骨架 -->
-          <div class="space-y-2 px-5 py-2 border-b">
+          <Skeleton data-section="圖片骨架" height="200px" class="rounded-none" />
+
+          <div data-section="內容骨架" class="space-y-2 px-5 py-2 border-b">
             <Skeleton height="1.5rem" width="70%" />
             <div class="flex justify-between">
               <Skeleton height="1rem" width="30%" />
               <Skeleton height="1rem" width="30%" />
             </div>
           </div>
-          <!-- 按鈕骨架 -->
-          <div class="grid grid-cols-2">
+          <div data-section="按鈕骨架 " class="grid grid-cols-2">
             <Skeleton height="2.5rem" class="rounded-none" />
             <Skeleton height="2.5rem" class="rounded-none" />
           </div>
         </div>
       </template>
-
-      <!-- 實際商品列表 -->
-      <template v-else>
+      <template v-else data-section="實際商品列表 ">
         <div v-for="item in products" :key="item.product_id" class="border border-[--secondary-color] rounded max-sm:w-[291px] sm:max-w-[291px] min-h-[200px]">
           <div src="" alt="" class="relative border-b h-[200px]">
             <Image :pt="imagePt" :src="item.img_urls[0]" alt="Image" width="250" />
-            <!-- like 標記：顯示收藏狀態（點擊寫入邏輯待實作） -->
+
             <div class="top-2 right-2 z-0 absolute size-[20px]">
               <button v-if="item.is_liked" class="flex justify-center items-center w-full h-full" @click="handleToggleLike(item.product_id, true)">
                 <i class="pi pi-heart-fill icon"></i>

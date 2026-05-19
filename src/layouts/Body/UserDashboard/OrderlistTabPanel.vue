@@ -2,11 +2,8 @@
 import { computed, ref } from 'vue'
 import { Accordion, AccordionContent, AccordionHeader, AccordionPanel, Button, Divider, Tag } from 'primevue'
 import { useToast } from 'primevue/usetoast'
-import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
 const toast = useToast()
-const breakpoints = useBreakpoints(breakpointsTailwind)
-const isDesktop = breakpoints.greaterOrEqual('md') // 自動響應的 Ref<boolean>
 
 // 訂單狀態類型
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
@@ -307,7 +304,7 @@ function requestRefund(order: Order) {
 }
 
 const accordionContentPt = {
-  content: '!px-3',
+  content: 'max-sm:!px-3',
 }
 </script>
 
@@ -324,7 +321,7 @@ const accordionContentPt = {
     <div v-if="filteredOrders.length > 0" data-section="某一訂單種類的訂單列表" class="space-y-4">
       <Accordion :multiple="true" class="order-accordion">
         <AccordionPanel v-for="order in filteredOrders" :key="order.id" class="max-sm:!mb-1" :value="order.id">
-          <AccordionHeader data-section="手風琴的表頭" class="py-2">
+          <AccordionHeader data-section="手風琴的表頭" class="py-2 sm:py-4">
             <div class="flex items-center pr-2 sm:pr-4 w-full">
               <font-awesome-icon :icon="getStatusIcon(order.status)" class="mr-2 sm:mr-4 text-2xl" />
               <div class="flex max-sm:flex-wrap justify-between items-center w-full">
@@ -350,7 +347,7 @@ const accordionContentPt = {
                       共 {{ order.items.length }} 件商品
                     </div>
                   </div>
-                  <Tag v-if="isDesktop" :severity="getStatusSeverity(order.status)" :value="getStatusText(order.status)" />
+                  <Tag class="max-md:hidden" :severity="getStatusSeverity(order.status)" :value="getStatusText(order.status)" />
                 </div>
               </div>
             </div>

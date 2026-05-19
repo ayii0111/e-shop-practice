@@ -2,19 +2,22 @@
 import { Breadcrumb } from 'primevue'
 import { SideNavbar } from './ProductDisplay'
 
+const route = useRoute()
+
+// #region: <Breadcrumb> 依賴 ------------------------------
 const home = ref({
   label: 'Home',
   to: '/',
 })
 
-const route = useRoute()
-
+// 依賴 route.fullPath
 const breadcrumbItems = computed(() => {
   const items: string[] = route.fullPath.split('/').slice(1)
   // 提取路由路徑最後的字串
   const lastSegment = items[items.length - 1] || ''
   return [{ label: lastSegment, disabled: true }]
 })
+// #endregion ------------------------------
 </script>
 
 <template>

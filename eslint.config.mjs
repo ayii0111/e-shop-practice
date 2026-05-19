@@ -8,6 +8,8 @@ export default antfu(
       css: true,
       html: true,
     },
+    // 這個 settings 設定要使用，vue 檔案使用 index.ts 同一匯出後，在引用時就不會報錯
+    // 添加兩個 extensions 配置，可以讓 vite @路徑 可以自己補全 .ts 副檔名，否則要加副檔名才不會報錯
     settings: {
       'import-x/resolver': {
         typescript: {
@@ -22,6 +24,7 @@ export default antfu(
   },
   {
     rules: {
+      'vue/no-useless-template-attributes': 0, // 在 template 中添加 data-section="標記" 不會報錯
       'import/no-unresolved': 'error', // 直接標記未安裝的套件(非常重要，每次都以為已經安裝了套件)
       'no-redeclare': 'off', // 關閉與 TypeScript 重複的規則（避免衝突）
       'no-console': 0, // 禁用 console
