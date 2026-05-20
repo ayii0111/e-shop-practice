@@ -1,19 +1,30 @@
 <script setup lang="ts">
 import { Button, Checkbox, DataView, Divider, InputNumber } from 'primevue'
 import { ProductService } from './LikeList'
+import { useCartStore } from '@stores/useCartStore'
 
-// #region: <DataView> ------------------------------
-const products = ref()
+const router = useRouter()
+const cartStore = useCartStore()
 
-// 依賴: 購物車商品數據
-// product_id, quantity, 原價, 售價
+// ── 初始化購物車資料（mock data 轉換為 CartItem 格式） ──
 onMounted(() => {
-  ProductService.getProductsSmall().then(data => (products.value = data))
+  ProductService.getProductsSmall().then((data: any[]) => {
+    cartStore.setItems(
+      data.map(p => ({
+        id: p.id,
+        name: p.name,
+        image: p.image,
+        category: p.category,
+        salePrice: p.price,
+        originalPrice: Math.round(p.price * 1.2), // mock 原價
+        quantity: 1,
+        inventoryStatus: p.inventoryStatus,
+      })),
+    )
+  })
 })
-// #endregion ------------------------------
 
-// <DataView> 內部的插槽應該要直接依賴其本身輸入的數據
-const quantity = ref(1)
+// ── UI 設定 ──────────────────────────────────────────────
 const inputNumberDt = {
   root: { buttonWidth: '2rem' },
 }
@@ -22,69 +33,81 @@ const inputNumberPt = {
     root: 'py-1 px-2 !min-w-1 w-10 text-center flex-none',
   },
 }
-
-const buttonDt = {
-  //  var(--p-surface-100)
+const removeBtnDt = {
   root: {
     primaryBackground: 'var(--danger-color)',
     primaryHoverBackground: 'var(--danger-color)',
   },
 }
-const selectAll = ref(false)
-const checked = ref(false)
+
+// ── 勾選狀態（橋接 Set 與 Checkbox 的 boolean） ──────────
+function isChecked(id: string) {
+  return cartStore.checkedIds.has(id)
+}
+function onCheckChange(id: string) {
+  cartStore.toggleCheck(id)
+}
+
+// ── 去買單 ───────────────────────────────────────────────
+function goCheckout() {
+  if (cartStore.checkedItems.length === 0) { return }
+  router.push({ name: 'CheckoutBody' })
+}
+
+// ── 勾選商品小計 ─────────────────────────────────────────
+const checkedSubtotal = computed(() =>
+  cartStore.checkedItems.reduce((sum, item) => sum + item.salePrice * item.quantity, 0),
+)
 </script>
 
 <template>
   <div class="relative mx-auto pt-2 max-w-[1000px] min-h-[700px]">
-    <DataView :value="products">
+    <DataView :value="cartStore.items">
       <template #list="slotProps">
         <div class="flex flex-col">
-          <div v-for="(item, index) in slotProps.items" :key="index">
-            <div class="relative flex sm:flex-row flex-col sm:items-center sm:gap-4 sm:py-3 pt-4 pb-2" :class="{ 'border-t border-surface-200 dark:border-surface-700 ': index !== 0 }">
-              <Checkbox v-model="checked" class="sm:mx-4" binary />
+          <div v-for="(item, index) in slotProps.items" :key="item.id">
+            <div class="relative flex sm:flex-row flex-col sm:items-center sm:gap-4 sm:py-3 pt-4 pb-2" :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
+              <!-- 勾選框 -->
+              <Checkbox class="sm:mx-4" :modelValue="isChecked(item.id)" binary @update:modelValue="onCheckChange(item.id)" />
+
+              <!-- 商品圖片 -->
               <div data-label="商品圖片" class="relative sm:my-0 mt-1 mb-4 sm:w-32">
                 <img class="block xl:block mx-auto rounded w-full" :src="`https://primefaces.org/cdn/primevue/images/product/${item.image}`" :alt="item.name" />
                 <div class="absolute bg-black/70 rounded-border" style="left: 4px; top: 4px">
-                  <Tag :value="item.inventoryStatus"></Tag>
+                  <Tag :value="item.inventoryStatus" />
                 </div>
               </div>
+
+              <!-- 商品資訊 -->
               <div class="flex flex-1 justify-between sm:grid sm:grid-cols-[3fr_5fr]">
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2">
                   <div>
-                    <div class="font-medium text-lg mt-0 ">
-                      {{ item.name }}
-                    </div>
+                    <div class="mt-0 font-medium text-lg">{{ item.name }}</div>
                     <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.category }}</span>
                   </div>
                 </div>
+
                 <div class="sm:grid sm:grid-cols-[2fr_3fr]">
+                  <!-- 數量 -->
                   <div data-label="數量" class="flex flex-col items-center max-sm:mb-4 pt-1">
-                    <InputNumber v-model="quantity" :dt="inputNumberDt" :pt="inputNumberPt" class="mb-2" inputId="horizontal-buttons" showButtons buttonLayout="horizontal" :step="1" :min="1" :max="99">
-                      <template #incrementbuttonicon>
-                        <span class="pi pi-plus" />
-                      </template>
-                      <template #decrementbuttonicon>
-                        <span class="pi pi-minus" />
-                      </template>
+                    <InputNumber :modelValue="item.quantity" :dt="inputNumberDt" :pt="inputNumberPt" class="mb-2" inputId="horizontal-buttons" showButtons buttonLayout="horizontal" :step="1" :min="1" :max="99" @update:modelValue="(val) => cartStore.updateQuantity(item.id, val ?? 1)">
+                      <template #incrementbuttonicon><span class="pi pi-plus" /></template>
+                      <template #decrementbuttonicon><span class="pi pi-minus" /></template>
                     </InputNumber>
-                    <span class="text-center"> 當前總數: 8</span>
+                    <span class="text-gray-500 text-sm text-center">庫存: {{ item.inventoryStatus }}</span>
                   </div>
-                  <div v-if="true">
-                    <div data-label="價格" class="flex flex-col justify-center items-end sm:items-start sm:mr-8 sm:ml-8">
-                      <span class="mr-3 sm:mr-0 mb-2 font-semibold text-lg">${{ item.price }}</span>
-                      <span class="mr-3 sm:mr-0 text-gray-500 whitespace-nowrap">原價: 988</span>
-                    </div>
-                  </div>
-                  <div v-else class="flex max-sm:justify-end items-center">
-                    <div data-label="價格" class="flex flex-col justify-center items-end sm:items-start sm:mr-8 sm:ml-8">
-                      <span class="mr-3 sm:mr-0 mb-2 font-semibold text-lg">$988</span>
-                    </div>
+
+                  <!-- 價格 -->
+                  <div data-label="價格" class="flex flex-col justify-center items-end sm:items-start sm:mr-8 sm:ml-8">
+                    <span class="mr-3 sm:mr-0 mb-1 font-semibold text-lg">${{ item.salePrice }}</span>
+                    <span class="mr-3 sm:mr-0 text-gray-400 text-sm line-through whitespace-nowrap">
+                      原價: ${{ item.originalPrice }}
+                    </span>
                   </div>
                 </div>
 
-                <Button icon="pi pi-times" variant="text" size="small" rounded severity="secondary" aria-label="Cancel" class="top-2 md:top-1 right-0 absolute">
-                  <template #loadingicon=""></template>
-                </Button>
+                <!-- 刪除按鈕 -->
+                <Button icon="pi pi-times" variant="text" size="small" rounded severity="secondary" aria-label="移除商品" class="top-2 md:top-1 right-0 absolute" @click="cartStore.removeItem(item.id)" />
               </div>
             </div>
           </div>
@@ -92,21 +115,24 @@ const checked = ref(false)
       </template>
     </DataView>
 
+    <!-- 底部結帳列 -->
     <div class="bottom-0 sticky !bg-white">
       <Divider />
-      <div class="flex justify-between items-center pb-2 px-4">
+      <div class="flex justify-between items-center px-4 pb-2">
         <div class="flex items-center">
-          <Checkbox v-model="selectAll" inputId="select-all" class="ml-4" binary />
-          <label class="ml-2" for="select-all"> 全選 </label>
+          <Checkbox v-model="cartStore.isAllChecked" inputId="select-all" class="ml-4" binary @update:modelValue="cartStore.toggleAll" />
+          <label class="ml-2 cursor-pointer" for="select-all">全選</label>
         </div>
-        <div>
-          總金額: 0 <Button class="mr-2 ml-8 border-none" :dt="buttonDt" size="small">
-            去買單
+        <div class="flex items-center gap-4">
+          <span class="text-gray-700">
+            總金額:
+            <span class="ml-1 font-bold text-primary text-lg">${{ checkedSubtotal.toLocaleString() }}</span>
+          </span>
+          <Button class="border-none" :dt="removeBtnDt" size="small" :disabled="cartStore.checkedItems.length === 0" @click="goCheckout">
+            去買單 ({{ cartStore.checkedItems.length }})
           </Button>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<!-- <template #submenuicon="slotProps"></template> -->

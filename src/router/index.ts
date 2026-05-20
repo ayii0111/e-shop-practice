@@ -46,6 +46,11 @@ const router = createRouter({
           component: () => import('../layouts/Body/CartBody.vue'),
         },
         {
+          path: 'checkout',
+          name: 'CheckoutBody',
+          component: () => import('../layouts/Body/CheckoutBody.vue'),
+        },
+        {
           path: 'dashboard/',
           name: 'UserDashboardBody',
           component: () => import('../layouts/Body/UserDashboardBody.vue'),
@@ -76,7 +81,7 @@ const router = createRouter({
     },
 
   ],
-  scrollBehavior (to, from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
     if (to.meta.scrollToTop) {
       return { top: 0 } // 代表回到最頂端 (模擬「頁面跳轉」效果)
     }
