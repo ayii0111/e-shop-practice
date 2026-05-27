@@ -1,27 +1,31 @@
 <script setup lang="ts">
 import { Button, Checkbox, DataView, Divider, InputNumber } from 'primevue'
-import { ProductService } from './LikeList'
 import { useCartStore } from '@stores/useCartStore'
+import { useAuthStore } from '@stores/useAuthStore'
+import { cartApi } from '@services'
 
 const router = useRouter()
 const cartStore = useCartStore()
+const authStore = useAuthStore()
 
-// ── 初始化購物車資料（mock data 轉換為 CartItem 格式） ──
-onMounted(() => {
-  ProductService.getProductsSmall().then((data: any[]) => {
-    cartStore.setItems(
-      data.map(p => ({
-        id: p.id,
-        name: p.name,
-        image: p.image,
-        category: p.category,
-        salePrice: p.price,
-        originalPrice: Math.round(p.price * 1.2), // mock 原價
-        quantity: 1,
-        inventoryStatus: p.inventoryStatus,
-      })),
-    )
-  })
+// ── 載入購物車資料 ────────────────────────────────────────
+const loading = ref(false)
+
+function parseUserIdFromToken(token: string): string {
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    return JSON.parse(atob(base64)).sub ?? ''
+  }
+  catch { return '' }
+}
+
+onMounted(async () => {
+  if (!authStore.accessToken) { return }
+  loading.value = true
+  const userId = parseUserIdFromToken(authStore.accessToken)
+  const items = await cartApi(userId)
+  cartStore.setItems(items)
+  loading.value = false
 })
 
 // ── UI 設定 ──────────────────────────────────────────────
@@ -52,6 +56,7 @@ function onCheckChange(id: string) {
 function goCheckout() {
   if (cartStore.checkedItems.length === 0) { return }
   router.push({ name: 'CheckoutBody' })
+  window.scrollTo({ top: 0, behavior: 'instant' })
 }
 
 // ── 勾選商品小計 ─────────────────────────────────────────
@@ -62,13 +67,24 @@ const checkedSubtotal = computed(() =>
 
 <template>
   <div class="relative mx-auto pt-2 max-w-[1000px] min-h-[700px]">
-    <DataView :value="cartStore.items">
+    <!-- 載入中 -->
+    <div v-if="loading" class="flex justify-center items-center min-h-[400px]">
+      <span class="text-gray-400 text-3xl pi pi-spin pi-spinner" />
+    </div>
+
+    <!-- 空購物車 -->
+    <div v-else-if="cartStore.items.length === 0" class="flex flex-col justify-center items-center gap-4 min-h-[400px] text-gray-400">
+      <font-awesome-icon :icon="['fas', 'cart-shopping']" class="text-5xl" />
+      <p>購物車是空的</p>
+    </div>
+
+    <DataView v-else :value="cartStore.items">
       <template #list="slotProps">
         <div class="flex flex-col">
           <div v-for="(item, index) in slotProps.items" :key="item.id">
             <div class="relative flex sm:flex-row flex-col sm:items-center sm:gap-4 sm:py-3 pt-4 pb-2" :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
               <!-- 勾選框 -->
-              <Checkbox class="sm:mx-4" :modelValue="isChecked(item.id)" binary @update:modelValue="onCheckChange(item.id)" />
+              <Checkbox class="sm:mx-4" :modelValue="isChecked(item.id)" binary @update:model-value="onCheckChange(item.id)" />
 
               <!-- 商品圖片 -->
               <div data-label="商品圖片" class="relative sm:my-0 mt-1 mb-4 sm:w-32">
@@ -82,7 +98,9 @@ const checkedSubtotal = computed(() =>
               <div class="flex flex-1 justify-between sm:grid sm:grid-cols-[3fr_5fr]">
                 <div class="flex flex-row md:flex-col justify-between items-start gap-2">
                   <div>
-                    <div class="mt-0 font-medium text-lg">{{ item.name }}</div>
+                    <div class="mt-0 font-medium text-lg">
+                      {{ item.name }}
+                    </div>
                     <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.category }}</span>
                   </div>
                 </div>
@@ -90,9 +108,13 @@ const checkedSubtotal = computed(() =>
                 <div class="sm:grid sm:grid-cols-[2fr_3fr]">
                   <!-- 數量 -->
                   <div data-label="數量" class="flex flex-col items-center max-sm:mb-4 pt-1">
-                    <InputNumber :modelValue="item.quantity" :dt="inputNumberDt" :pt="inputNumberPt" class="mb-2" inputId="horizontal-buttons" showButtons buttonLayout="horizontal" :step="1" :min="1" :max="99" @update:modelValue="(val) => cartStore.updateQuantity(item.id, val ?? 1)">
-                      <template #incrementbuttonicon><span class="pi pi-plus" /></template>
-                      <template #decrementbuttonicon><span class="pi pi-minus" /></template>
+                    <InputNumber :modelValue="item.quantity" :dt="inputNumberDt" :pt="inputNumberPt" class="mb-2" inputId="horizontal-buttons" showButtons buttonLayout="horizontal" :step="1" :min="1" :max="99" @update:model-value="(val) => cartStore.updateQuantity(item.id, val ?? 1)">
+                      <template #incrementbuttonicon>
+                        <span class="pi pi-plus" />
+                      </template>
+                      <template #decrementbuttonicon>
+                        <span class="pi pi-minus" />
+                      </template>
                     </InputNumber>
                     <span class="text-gray-500 text-sm text-center">庫存: {{ item.inventoryStatus }}</span>
                   </div>
@@ -120,7 +142,7 @@ const checkedSubtotal = computed(() =>
       <Divider />
       <div class="flex justify-between items-center px-4 pb-2">
         <div class="flex items-center">
-          <Checkbox v-model="cartStore.isAllChecked" inputId="select-all" class="ml-4" binary @update:modelValue="cartStore.toggleAll" />
+          <Checkbox v-model="cartStore.isAllChecked" inputId="select-all" class="ml-4" binary @update:model-value="cartStore.toggleAll" />
           <label class="ml-2 cursor-pointer" for="select-all">全選</label>
         </div>
         <div class="flex items-center gap-4">

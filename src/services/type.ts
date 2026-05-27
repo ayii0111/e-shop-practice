@@ -13,3 +13,23 @@ export type Product = {
   average_rating: number // 星等評價 (0–5)
   is_liked?: boolean // 當前用戶是否已收藏（登入時由 RPC 回傳，未登入時不存在）
 }
+
+// ─── 購物車相關後端原始型別（防腐層：只在 api.ts 的 mapper 內使用）──────────
+
+/** user_profiles.cart_list 陣列中每一筆的原始結構 */
+export type RawCartEntry = {
+  product_id: string
+  quantity: number
+}
+
+/** Supabase products 資料表的原始欄位（與前端 CartItem 的屬性名稱不同） */
+export type RawProduct = {
+  product_id: string
+  name: string
+  original_price: number
+  sale_price: number
+  img_urls: string[]
+  product_status: string[]
+  stock: number
+  category: string
+}

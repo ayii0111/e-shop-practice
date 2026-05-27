@@ -103,3 +103,67 @@ export async function productsWithLikeApi(
     { headers },
   )
 }
+
+// ─── 購物車 API ───────────────────────────────────────────────────────────────
+import type { CartItem } from '@stores/useCartStore'
+import type { RawCartEntry, RawProduct } from './type'
+
+// ── 防腐層 mapper ──────────────────────────────────────────────────────────────
+// 後端欄位名稱只在此處出現，轉換後其餘程式碼只認識前端的 CartItem 介面
+// 日後後端改欄位名稱，只需修改這一個函式
+function toCartItem(raw: RawProduct, quantity: number): CartItem {
+  return {
+    id: raw.product_id,
+    name: raw.name,
+    image: raw.img_urls?.[0] ?? '',
+    category: raw.category,
+    salePrice: raw.sale_price,
+    originalPrice: raw.original_price,
+    quantity,
+    inventoryStatus: raw.product_status?.[0] ?? '',
+  }
+}
+
+/**
+ * 取得用戶購物車商品列表
+ * 流程：
+ *   Step 1：從 user_profiles 取得 cart_list（[{ product_id, quantity }]）
+ *   Step 2：用 product_id 批次查詢商品資料
+ *   Step 3：透過 mapper 轉換為前端 CartItem[]
+ */
+export async function cartApi(userId: string): Promise<CartItem[]> {
+  // Step 1：取得 cart_list
+  const [cartListError, cartListResp] = await to(
+    supabaseApi.get(`/user_profiles?user_id=eq.${userId}&select=cart_list`),
+  ) as [Error, any]
+
+  if (cartListError) {
+    useWarpToast('取得購物車失敗', cartListError.message)
+    debugLog('取得購物車失敗', () => cartListError)
+    return []
+  }
+
+  const cartList: RawCartEntry[] = cartListResp?.data?.[0]?.cart_list ?? []
+  if (cartList.length === 0) { return [] }
+
+  // Step 2：批次查詢商品資料
+  const ids = cartList.map(entry => entry.product_id).join(',')
+  const [productsError, productsResp] = await to(
+    supabaseApi.get(`/products?product_id=in.(${ids})`),
+  ) as [Error, any]
+
+  if (productsError) {
+    useWarpToast('取得購物車商品資料失敗', productsError.message)
+    debugLog('取得購物車商品資料失敗', () => productsError)
+    return []
+  }
+
+  const rawProducts: RawProduct[] = productsResp?.data ?? []
+
+  // Step 3：mapper 轉換，並依 cart_list 的順序與數量組合
+  const productMap = new Map(rawProducts.map(p => [p.product_id, p]))
+
+  return cartList
+    .filter(entry => productMap.has(entry.product_id)) // 過濾已下架商品
+    .map(entry => toCartItem(productMap.get(entry.product_id)!, entry.quantity))
+}
