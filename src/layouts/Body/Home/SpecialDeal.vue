@@ -5,11 +5,11 @@ import { Button } from 'primevue'
 <template>
   <div class="flex justify-between items-center p-6 bg">
     <div class="mr-2">
-      <h5 class="mb-2 text-xl">
-        限量 Coupon 大放送
+      <h5 class="mb-2 font-bold text-xl">
+        新客優惠券
       </h5>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. A, aliquid cumque iusto necessitatibus quasi tempora.
+      <p class="font-medium text-gray-700">
+        首次下單即享專屬禮遇，訂單金額每滿 $1000 自動折抵 $100，不限商品品項，輕鬆入手心儀好物，優惠直接扣，省錢不費力。
       </p>
     </div>
     <Button class="px-3 py-1.5 w-40 btn-color">

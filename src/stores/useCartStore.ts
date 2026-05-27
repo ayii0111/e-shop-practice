@@ -32,10 +32,11 @@ export const useCartStore = defineStore('cart', () => {
   )
 
   /** 購物車商品總數（顯示在 header badge 用）
-   *  依賴 items 陣列長度（件數），而非 quantity 加總
-   *  讓 badge 反映「幾種商品」而非「總數量」，語意更直覺
+   *  各商品 quantity 加總，反映實際購買數量
    */
-  const totalItemCount = computed(() => items.value.length)
+  const totalItemCount = computed(() =>
+    items.value.reduce((sum, item) => sum + item.quantity, 0),
+  )
 
   // ── Actions ────────────────────────────────────────────
 

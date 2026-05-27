@@ -45,7 +45,7 @@ const responsiveOptions = ref([
   },
   {
     breakpoint: '575px',
-    numVisible: 1,
+    numVisible: 4,
   },
 ])
 
@@ -64,15 +64,14 @@ const images = ref(_images)
 // #region: <Breadcrumb> ------------------------------
 // 依賴: 當前商品詳情 api 數據的: 名稱, 商品種類
 // 商品種類對應的 path
-//
+
 const topOfBreadcrumbItems = {
   label: 'TOP',
   to: '/products-display-body/product-list/top',
 }
 // 依賴: 當前商品詳情 api 數據的: 名稱
+// 依賴: route.fullPath,
 const breadcrumbItems = computed(() => {
-  // 取得當前的 route-path
-  // 格式 ['products', '01']
   const items: string[] = route.fullPath.split('/').slice(1)
 
   // 提取路由路徑最後的字串
@@ -101,8 +100,8 @@ const breadcrumbItems = computed(() => {
         /
       </template>
     </Breadcrumb>
-    <div class="max-sm:flex max-sm:flex-col md:grid md:grid-cols-12 pb-16">
-      <div class="md:col-span-7">
+    <div class="relative max-sm:flex max-sm:flex-col md:grid md:grid-cols-12 pb-16">
+      <div class="top-0 md:sticky self-start md:col-span-7">
         <Galleria :value="images" :responsiveOptions :numVisible="5" containerStyle="max-width: 100%;">
           <template #item="slotProps">
             <!-- <img class="max-h-[calc(100vh-138px-92px-32px)]" :src="slotProps.item.itemImageSrc" :alt="slotProps.item.alt" /> -->
@@ -124,7 +123,7 @@ const breadcrumbItems = computed(() => {
         <p class="mb-4 text-base">
           型號：tkt19379
         </p>
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex justify-between items-center mb-4">
           <Rating v-model="ratingLevel" readonly class="" />
           <span class="">
             <button v-if="isLiked" class="flex justify-center items-center w-full h-full text-[var(--danger-color)]">
@@ -138,18 +137,20 @@ const breadcrumbItems = computed(() => {
         </div>
 
         <hr class="mb-4">
-
+        <div v-if="true">
+          商品描述:
+        </div>
         <div class="mt-12">
-          <Tag severity="info" :dt="tagDT" value="滿額增" rounded></Tag>
-          <span> 滿 3,000元送 100元</span>
-          <p class="mb-2 font-bold text-red-500 text-xl sm:text-2xl">
+          <Tag class="mb-1" severity="info" :dt="tagDT" value="滿額增" rounded></Tag>
+          <span class="mr-2"> 滿 3,000元送 100元</span>
+          <p class="text-gray-500 text-xs  mt-1 mb-2">
+            截至 4/24日
+          </p>
+          <p class="mb-2 font-bold  text-xl sm:text-2xl">
             NT$ 1999
           </p>
-          <p class="mb-2 text-gray-500 text-sm">
+          <p class="mb-2 text-gray-400 decoration-gray-400 text-xs line-through">
             原價：NT$ 2499
-          </p>
-          <p class="text-red-500 text-sm">
-            截至 4/24 限定價格
           </p>
         </div>
         <div class="flex items-center mt-4">
@@ -160,10 +161,10 @@ const breadcrumbItems = computed(() => {
             <template #decrementbuttonicon>
               <span class="pi pi-minus" />
             </template>
-          </InputNumber> 庫存 &lt; 3
+          </InputNumber> 庫存: 3
         </div>
         <div class="flex items-center mt-14 mb-4 pr-4">
-          <span class="flex gap-1  shrink-0">
+          <span class="flex gap-1 shrink-0">
             <a href=""><img src="@icon/link.png" class="size-8" alt=""></a>
             <a href=""><img src="@icon/line.svg" class="size-8" alt=""></a>
             <a href=""><img src="@icon/facebook.svg" class="size-8" alt=""></a>

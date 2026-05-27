@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, Divider, InputText, SelectButton, Textarea } from 'primevue'
+import { Button, Divider, InputText, Textarea } from 'primevue'
 import { useCartStore } from '@stores/useCartStore'
 import { useAuthStore } from '@stores/useAuthStore'
 import { supabaseApi } from '@services'
@@ -186,13 +186,13 @@ function formatCurrency(amount: number) {
 
 <template>
   <div class="mx-auto px-4 py-6 max-w-[1100px]">
-    <h1 class="mb-6 font-bold text-2xl">結帳</h1>
+    <h1 class="bg-gray-100 mb-6 px-4 py-3 font-bold text-2xl">
+      結帳
+    </h1>
 
     <div class="gap-6 grid grid-cols-1 lg:grid-cols-[1fr_380px]">
-
       <!-- ── 左欄：表單區 ─────────────────────────────── -->
       <div class="space-y-6">
-
         <!-- 訂購商品確認 -->
         <section data-section="訂購商品確認">
           <h2 class="flex items-center gap-2 mb-4 font-semibold text-lg">
@@ -205,12 +205,20 @@ function formatCurrency(amount: number) {
                 <img :src="`https://primefaces.org/cdn/primevue/images/product/${item.image}`" :alt="item.name" class="rounded w-full h-full object-cover" />
               </div>
               <div class="flex-1 min-w-0">
-                <div class="font-medium truncate">{{ item.name }}</div>
-                <div class="text-gray-500 text-sm">{{ item.category }}</div>
+                <div class="font-medium truncate">
+                  {{ item.name }}
+                </div>
+                <div class="text-gray-500 text-sm">
+                  {{ item.category }}
+                </div>
               </div>
               <div class="text-right shrink-0">
-                <div class="font-semibold">{{ formatCurrency(item.salePrice * item.quantity) }}</div>
-                <div class="text-gray-500 text-sm">x{{ item.quantity }}</div>
+                <div class="font-semibold">
+                  {{ formatCurrency(item.salePrice * item.quantity) }}
+                </div>
+                <div class="text-gray-500 text-sm">
+                  x{{ item.quantity }}
+                </div>
               </div>
             </div>
           </div>
@@ -302,7 +310,9 @@ function formatCurrency(amount: number) {
       <!-- ── 右欄：金額明細 + 送出 ──────────────────────── -->
       <div class="lg:top-4 lg:sticky self-start">
         <div class="space-y-4 p-6 border border-gray-200 rounded-xl">
-          <h2 class="font-semibold text-lg">訂單明細</h2>
+          <h2 class="font-semibold text-lg">
+            訂單明細
+          </h2>
 
           <div class="space-y-3 text-sm">
             <!-- 商品小計 -->
@@ -343,12 +353,9 @@ function formatCurrency(amount: number) {
           <!-- 送出按鈕 -->
           <Button label="確認送出訂單" class="mt-2 w-full" size="large" :loading="isSubmitting" :disabled="!canSubmit" @click="submitOrder" />
 
-          <p v-if="!isShippingComplete" class="text-gray-400 text-xs text-center">
+          <!-- <p v-if="!isShippingComplete" class="text-gray-400 text-xs text-center">
             請填寫完整地址後才能送出
-          </p>
-
-          <!-- 返回購物車 -->
-          <Button label="返回購物車" severity="secondary" variant="text" class="w-full" @click="router.back()" />
+          </p> -->
         </div>
       </div>
     </div>

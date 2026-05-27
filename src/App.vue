@@ -56,19 +56,14 @@ const isShow = false
 }
 
 html {
-  /* font-family:
-    'Noto Sans TC',
+  font-family:
+    'PingFang TC',
+    'Microsoft JhengHei',
     -apple-system,
-    'system-ui',
-    'Segoe UI',
-    Roboto,
+    BlinkMacSystemFont,
     'Helvetica Neue',
     Arial,
-    sans-serif,
-    'Apple Color Emoji',
-    'Segoe UI Emoji',
-    'Segoe UI Symbol',
-    'Noto Color Emoji' !important; */
+    sans-serif;
 }
 
 :root {
