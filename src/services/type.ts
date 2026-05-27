@@ -5,6 +5,7 @@ export type Product = {
   img_urls: string[] // 圖片網址陣列
   product_status: string[] // 現貨 / 新品 / 預購 / 限購
   product_id: string // 商品 ID
+  sku: string // 貨號（例如 TOP-2024-0001）
   stock: number // 庫存數量
   created_at: Date // 建立時間
   updated_at: Date // 上次更新時間

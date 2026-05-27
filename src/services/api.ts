@@ -224,3 +224,34 @@ export async function removeCartItemApi(userId: string, productId: string): Prom
     debugLog('removeCartItemApi 失敗', () => writeError)
   }
 }
+
+// ─── 商品詳情 API ─────────────────────────────────────────────────────────────
+import type { Product } from './type'
+
+/**
+ * 取得單一商品詳情，並附帶當前用戶的 like 狀態
+ * 對應 RPC: get_product_with_like_status(product_id_input, user_id_input?)
+ *
+ * @param productId  商品 UUID（從路由 params 取得）
+ * @param userId     當前登入用戶 UUID，未登入時傳 null
+ */
+export async function productDetailApi(
+  productId: string,
+  userId: string | null,
+): Promise<Product | null> {
+  const [error, resp] = await to(
+    supabaseApi.post('/rpc/get_product_with_like_status', {
+      product_id_input: productId,
+      user_id_input: userId ?? undefined,
+    }),
+  ) as [Error, any]
+
+  if (error) {
+    useWarpToast('取得商品資料失敗', error.message)
+    debugLog('productDetailApi 失敗', () => error)
+    return null
+  }
+
+  // RPC 回傳陣列，取第一筆
+  return resp?.data?.[0] ?? null
+}
