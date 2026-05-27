@@ -105,15 +105,11 @@ const topOfBreadcrumbItems = {
   label: 'TOP',
   to: '/products-display-body/product-list/top',
 }
-const breadcrumbItems = computed(() => {
-  const items = route.fullPath.split('/').slice(1)
-  const lastSegment = items[items.length - 1] || ''
-  return [{
-    label: lastSegment.toUpperCase(),
-    to: '',
-    disabled: () => true,
-  }]
-})
+const breadcrumbItems = computed(() => [{
+  label: product.value?.name ?? '',
+  to: '',
+  disabled: () => true,
+}])
 
 // ── Galleria 響應式設定 ──────────────────────────────────
 const responsiveOptions = ref([
@@ -158,10 +154,10 @@ async function copyLink() {
       <div class="top-0 md:sticky self-start md:col-span-7">
         <Galleria :value="images" :responsiveOptions :numVisible="5" containerStyle="max-width: 100%;">
           <template #item="slotProps">
-            <img :src="slotProps.item.itemImageSrc" :alt="slotProps.item.alt" />
+            <img :src="slotProps.item.itemImageSrc" :alt="slotProps.item.alt" class="w-full object-cover aspect-square" />
           </template>
           <template #thumbnail="slotProps">
-            <img :src="slotProps.item.thumbnailImageSrc" :alt="slotProps.item.alt" />
+            <img :src="slotProps.item.thumbnailImageSrc" :alt="slotProps.item.alt" class="w-16 h-16 object-cover" />
           </template>
         </Galleria>
       </div>
@@ -232,17 +228,10 @@ async function copyLink() {
 
         <!-- 分享 -->
         <div class="flex items-center mt-14 mb-4 pr-4">
-          <span class="flex gap-3">
-            <!-- 複製連結：使用 outline 風格，灰色 -->
-            <button class="text-gray-400 hover:text-gray-600 transition-colors" title="複製連結" @click="copyLink">
-              <font-awesome-icon :icon="['far', 'copy']" class="text-xl" />
-            </button>
-            <a :href="`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}`" target="_blank" class="text-gray-400 hover:text-gray-600 transition-colors" title="分享到 LINE">
-              <img src="@icon/line.svg" class="opacity-40 hover:opacity-70 size-6 transition-opacity" alt="LINE" />
-            </a>
-            <a :href="`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`" target="_blank" class="text-gray-400 hover:text-gray-600 transition-colors" title="分享到 Facebook">
-              <img src="@icon/facebook.svg" class="opacity-40 hover:opacity-70 size-6 transition-opacity" alt="Facebook" />
-            </a>
+          <span class="flex gap-1 shrink-0">
+            <a href="" @click.prevent="copyLink"><img src="@icon/link.png" class="size-8" alt="複製連結"></a>
+            <a :href="`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}`" target="_blank"><img src="@icon/line.svg" class="size-8" alt="LINE"></a>
+            <a :href="`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`" target="_blank"><img src="@icon/facebook.svg" class="size-8" alt="Facebook"></a>
           </span>
         </div>
 
