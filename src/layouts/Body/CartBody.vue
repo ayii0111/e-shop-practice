@@ -2,7 +2,7 @@
 import { Button, Checkbox, DataView, Divider, InputNumber } from 'primevue'
 import { useCartStore } from '@stores/useCartStore'
 import { useAuthStore } from '@stores/useAuthStore'
-import { cartApi } from '@services'
+import { cartApi, removeCartItemApi, updateCartApi } from '@services'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -19,14 +19,31 @@ function parseUserIdFromToken(token: string): string {
   catch { return '' }
 }
 
+const userId = computed(() =>
+  authStore.accessToken ? parseUserIdFromToken(authStore.accessToken) : '',
+)
+
 onMounted(async () => {
-  if (!authStore.accessToken) { return }
+  if (!userId.value) { return }
   loading.value = true
-  const userId = parseUserIdFromToken(authStore.accessToken)
-  const items = await cartApi(userId)
+  const items = await cartApi(userId.value)
   cartStore.setItems(items)
   loading.value = false
 })
+
+// ── 離開頁面時自動儲存數量變更 ───────────────────────────
+// 使用 onUnmounted 而非每次 updateQuantity 都發請求，避免頻繁 API 呼叫
+onUnmounted(async () => {
+  if (!userId.value) { return }
+  await updateCartApi(userId.value, cartStore.items)
+})
+
+// ── x 按鈕：立即移除並同步後端 ──────────────────────────
+async function handleRemoveItem(id: string) {
+  cartStore.removeItem(id)
+  if (!userId.value) { return }
+  await removeCartItemApi(userId.value, id)
+}
 
 // ── UI 設定 ──────────────────────────────────────────────
 const inputNumberDt = {
@@ -87,8 +104,8 @@ const checkedSubtotal = computed(() =>
               <Checkbox class="sm:mx-4" :modelValue="isChecked(item.id)" binary @update:model-value="onCheckChange(item.id)" />
 
               <!-- 商品圖片 -->
-              <div data-label="商品圖片" class="relative sm:my-0 mt-1 mb-4 sm:w-32">
-                <img class="block xl:block mx-auto rounded w-full" :src="`https://primefaces.org/cdn/primevue/images/product/${item.image}`" :alt="item.name" />
+              <div data-label="商品圖片" class="relative sm:my-0 mt-1 mb-4 w-full sm:w-72 h-48 sm:h-48 shrink-0">
+                <img class="rounded w-full h-full object-cover" :src="item.image" :alt="item.name" />
                 <div class="absolute bg-black/70 rounded-border" style="left: 4px; top: 4px">
                   <Tag :value="item.inventoryStatus" />
                 </div>
@@ -129,7 +146,7 @@ const checkedSubtotal = computed(() =>
                 </div>
 
                 <!-- 刪除按鈕 -->
-                <Button icon="pi pi-times" variant="text" size="small" rounded severity="secondary" aria-label="移除商品" class="top-2 md:top-1 right-0 absolute" @click="cartStore.removeItem(item.id)" />
+                <Button icon="pi pi-times" variant="text" size="small" rounded severity="secondary" aria-label="移除商品" class="top-2 md:top-1 right-0 absolute" @click="handleRemoveItem(item.id)" />
               </div>
             </div>
           </div>

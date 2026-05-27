@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { OverlayBadge } from 'primevue'
 import { OAuthLogin } from './inMenubarEnd/index'
+import { useCartStore } from '@stores/useCartStore'
 
 // #region  購物車 數量圖標: <OverlayBadge> 元件 props ------------------------------
 const overlayBadgeDt = ref({
@@ -12,7 +13,9 @@ const overlayBadgeDt = ref({
   },
 })
 
-const cartProductCount = ref(18)
+const cartStore = useCartStore()
+// 依賴 store 的商品件數，移除商品或清空時自動更新
+const cartProductCount = computed(() => cartStore.totalItemCount || undefined)
 // #endregion ------------------------------
 </script>
 

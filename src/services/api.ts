@@ -167,3 +167,60 @@ export async function cartApi(userId: string): Promise<CartItem[]> {
     .filter(entry => productMap.has(entry.product_id)) // 過濾已下架商品
     .map(entry => toCartItem(productMap.get(entry.product_id)!, entry.quantity))
 }
+
+/**
+ * 將當前購物車狀態整個覆寫回 user_profiles.cart_list
+ * 離開購物車頁面時呼叫，避免每次修改數量都發送請求
+ */
+export async function updateCartApi(userId: string, cartItems: CartItem[]): Promise<void> {
+  const cartList: RawCartEntry[] = cartItems.map(item => ({
+    product_id: item.id,
+    quantity: item.quantity,
+  }))
+
+  const [error] = await to(
+    supabaseApi.patch(
+      `/user_profiles?user_id=eq.${userId}`,
+      { cart_list: cartList },
+    ),
+  ) as [Error, any]
+
+  if (error) {
+    useWarpToast('購物車儲存失敗', error.message)
+    debugLog('updateCartApi 失敗', () => error)
+  }
+}
+
+/**
+ * 從 cart_list 移除單一商品（立即寫入，x 按鈕點擊時呼叫）
+ * 做法：前端過濾後整個覆寫，與 toggleLikeApi 同樣的做法 A
+ */
+export async function removeCartItemApi(userId: string, productId: string): Promise<void> {
+  // Step 1：讀取當前 cart_list
+  const [readError, readResp] = await to(
+    supabaseApi.get(`/user_profiles?user_id=eq.${userId}&select=cart_list`),
+  ) as [Error, any]
+
+  if (readError) {
+    useWarpToast('移除商品失敗', readError.message)
+    return
+  }
+
+  const currentList: RawCartEntry[] = readResp?.data?.[0]?.cart_list ?? []
+
+  // Step 2：過濾掉要移除的商品
+  const newList = currentList.filter(entry => entry.product_id !== productId)
+
+  // Step 3：覆寫回去
+  const [writeError] = await to(
+    supabaseApi.patch(
+      `/user_profiles?user_id=eq.${userId}`,
+      { cart_list: newList },
+    ),
+  ) as [Error, any]
+
+  if (writeError) {
+    useWarpToast('移除商品失敗', writeError.message)
+    debugLog('removeCartItemApi 失敗', () => writeError)
+  }
+}

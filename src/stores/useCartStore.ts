@@ -1,6 +1,8 @@
 // 購物車 Store
 // 負責管理購物車商品列表、勾選狀態，並作為結帳頁的資料來源
 
+import { defineStore } from 'pinia'
+
 export interface CartItem {
   id: string
   name: string
@@ -29,10 +31,11 @@ export const useCartStore = defineStore('cart', () => {
     items.value.length > 0 && checkedIds.value.size === items.value.length,
   )
 
-  /** 購物車商品總數（顯示在 header badge 用） */
-  const totalCount = computed(() =>
-    items.value.reduce((sum, item) => sum + item.quantity, 0),
-  )
+  /** 購物車商品總數（顯示在 header badge 用）
+   *  依賴 items 陣列長度（件數），而非 quantity 加總
+   *  讓 badge 反映「幾種商品」而非「總數量」，語意更直覺
+   */
+  const totalItemCount = computed(() => items.value.length)
 
   // ── Actions ────────────────────────────────────────────
 
@@ -75,7 +78,7 @@ export const useCartStore = defineStore('cart', () => {
     checkedIds,
     checkedItems,
     isAllChecked,
-    totalCount,
+    totalItemCount,
     setItems,
     toggleCheck,
     toggleAll,
