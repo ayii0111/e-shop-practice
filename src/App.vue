@@ -3,10 +3,22 @@ import { Toast } from 'primevue'
 import { storeToRefs } from 'pinia'
 import { useJsonViewStore } from '@stores/useJsonViewStore'
 import { useToastStore } from '@stores/useToastStore'
+import { useAuthStore } from '@stores/useAuthStore'
+import { useCartStore } from '@stores/useCartStore'
 
-// App.vue 是根元件，在此初始化 toastStore，確保整個 app 都能使用
+// App.vue 是根元件，在此初始化各 store，確保整個 app 都能使用
 const toastStore = useToastStore()
 toastStore.init()
+
+const authStore = useAuthStore()
+authStore.restoreFromStorage()
+
+// 登入狀態還原後，立即初始化購物車，讓 header badge 在任何頁面都能顯示正確數量
+const cartStore = useCartStore()
+const userId = authStore.user?.id ?? ''
+if (userId) {
+  cartStore.init(userId)
+}
 
 const breakpoints = useBreakpoints({
   'sm': 640,

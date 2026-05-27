@@ -2,6 +2,7 @@
 // 負責管理購物車商品列表、勾選狀態，並作為結帳頁的資料來源
 
 import { defineStore } from 'pinia'
+import { cartApi } from '@services'
 
 export interface CartItem {
   id: string
@@ -74,6 +75,13 @@ export const useCartStore = defineStore('cart', () => {
     checkedIds.value.delete(id)
   }
 
+  /** app 啟動時呼叫，從後端載入購物車，確保任何頁面都能顯示正確數量 */
+  async function init(userId: string) {
+    if (!userId || items.value.length > 0) { return }
+    const loaded = await cartApi(userId)
+    setItems(loaded)
+  }
+
   return {
     items,
     checkedIds,
@@ -85,5 +93,6 @@ export const useCartStore = defineStore('cart', () => {
     toggleAll,
     updateQuantity,
     removeItem,
+    init,
   }
 })

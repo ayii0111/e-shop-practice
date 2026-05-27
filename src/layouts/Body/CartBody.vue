@@ -26,6 +26,7 @@ const userId = computed(() =>
 onMounted(async () => {
   if (!userId.value) { return }
   loading.value = true
+  // 進入購物車頁面時強制重新拉取，確保資料是最新的
   const items = await cartApi(userId.value)
   cartStore.setItems(items)
   loading.value = false
