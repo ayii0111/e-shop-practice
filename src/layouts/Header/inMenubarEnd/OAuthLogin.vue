@@ -4,6 +4,7 @@ import { Listbox, Popover } from 'primevue'
 import axios from 'axios'
 import { debugLog, useWarpToast } from '@util'
 import { useAuthStore } from '@stores/useAuthStore'
+import { useCartStore } from '@stores/useCartStore'
 
 const loading = ref(false)
 const authStore = useAuthStore()
@@ -91,6 +92,10 @@ async function exchangeCodeForToken() {
     }
     // 登入成功，統一由 authStore 寫入 localStorage
     authStore.setAuth(resp.data.user, resp.data.access_token, resp.data.refresh_token)
+
+    // 登入後立即初始化購物車，讓 header badge 馬上顯示正確數量
+    const cartStore = useCartStore()
+    await cartStore.init(resp.data.user.id)
 
     // 清除 URL 上的 code，避免重新整理時重複換 token
     window.history.replaceState({}, '', window.location.pathname)
