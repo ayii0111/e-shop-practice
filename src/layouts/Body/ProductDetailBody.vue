@@ -101,15 +101,29 @@ const promotions = ref<Promotion[]>([
 ])
 
 // ── Breadcrumb ───────────────────────────────────────────
-const topOfBreadcrumbItems = {
-  label: 'TOP',
-  to: '/products-display-body/product-list/top',
+const categoryLabelMap: Record<string, string> = {
+  top: '上半身',
+  bottom: '下半身',
+  shoes: '鞋',
+  accessory: '飾品',
+  life: '配件',
 }
-const breadcrumbItems = computed(() => [{
-  label: product.value?.name ?? '',
-  to: '',
-  disabled: () => true,
-}])
+
+const homeItem = ref({
+  label: '商品列表',
+  to: '/products-display-body/product-list/all',
+})
+const breadcrumbItems = ref([{ label: '', to: '', disabled: true }])
+
+watch(product, (val) => {
+  if (!val) { return }
+  const categoryLabel = categoryLabelMap[val.category] ?? val.category
+  homeItem.value = {
+    label: categoryLabel,
+    to: `/products-display-body/product-list/${val.category}`,
+  }
+  breadcrumbItems.value = [{ label: val.name, to: '', disabled: true }]
+})
 
 // ── Galleria 響應式設定 ──────────────────────────────────
 const responsiveOptions = ref([
@@ -127,11 +141,12 @@ async function copyLink() {
 
 <template>
   <div>
-    <Breadcrumb :home="topOfBreadcrumbItems" :model="breadcrumbItems" class="bg-[--gray-bg] mb-4 px-4 py-3 max-sm:w-full">
+    <Breadcrumb :home="homeItem" :model="breadcrumbItems" class="bg-[--gray-bg] mb-4 px-4 py-3 max-sm:w-full">
       <template #item="{ item }">
-        <RouterLink :to="item.to">
+        <RouterLink v-if="item.to" :to="item.to">
           <span>{{ item.label }}</span>
         </RouterLink>
+        <span v-else class="text-gray-500">{{ item.label }}</span>
       </template>
       <template #separator>
         /
