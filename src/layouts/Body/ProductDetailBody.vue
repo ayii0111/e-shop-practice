@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Breadcrumb, Button, Galleria, InputNumber, Rating, Tag } from 'primevue'
-import { productDetailApi, toggleLikeApi } from '@services'
+import { addToCartApi, productDetailApi, toggleLikeApi } from '@services'
 import { useAuthStore } from '@stores/useAuthStore'
+import { useCartStore } from '@stores/useCartStore'
+import { useWarpToast } from '@util'
 import type { Product } from '@services'
 
 const route = useRoute()
@@ -131,11 +133,43 @@ const responsiveOptions = ref([
   { breakpoint: '575px', numVisible: 4 },
 ])
 
+// ── 加入購物車 ───────────────────────────────────────────
+const cartStore = useCartStore()
+const addingToCart = ref(false)
+
+async function handleAddToCart() {
+  if (!userId.value) {
+    useWarpToast('請先登入', '登入後才能加入購物車', 'warn')
+    return
+  }
+  if (!product.value) { return }
+  addingToCart.value = true
+  await addToCartApi(userId.value, product.value.product_id, quantity.value)
+  // 同步本地 store（讓 badge 即時更新）
+  await cartStore.init(userId.value)
+  useWarpToast('已加入購物車', product.value.name, 'success')
+  addingToCart.value = false
+}
+
 // ── 分享：複製當前頁面連結 ───────────────────────────────
 const currentUrl = computed(() => window.location.href)
 
 async function copyLink() {
-  await navigator.clipboard.writeText(currentUrl.value)
+  try {
+    await navigator.clipboard.writeText(currentUrl.value)
+    useWarpToast('已複製連結', '可貼上至任何地方分享', 'success')
+  }
+  catch {
+    useWarpToast('複製失敗', '請手動複製網址列', 'error')
+  }
+}
+
+function onShareLine() {
+  useWarpToast('分享到 LINE', '已開啟 LINE 分享視窗', 'info')
+}
+
+function onShareFacebook() {
+  useWarpToast('分享到 Facebook', '已開啟 Facebook 分享視窗', 'info')
 }
 </script>
 
@@ -245,12 +279,12 @@ async function copyLink() {
         <div class="flex items-center mt-14 mb-4 pr-4">
           <span class="flex gap-1 shrink-0">
             <a href="" @click.prevent="copyLink"><img src="@icon/link.png" class="size-8" alt="複製連結"></a>
-            <a :href="`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}`" target="_blank"><img src="@icon/line.svg" class="size-8" alt="LINE"></a>
-            <a :href="`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`" target="_blank"><img src="@icon/facebook.svg" class="size-8" alt="Facebook"></a>
+            <a :href="`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}`" target="_blank" @click="onShareLine"><img src="@icon/line.svg" class="size-8" alt="LINE"></a>
+            <a :href="`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`" target="_blank" @click="onShareFacebook"><img src="@icon/facebook.svg" class="size-8" alt="Facebook"></a>
           </span>
         </div>
 
-        <Button label="加入購物車" severity="danger" class="mt-2 rounded-full w-full" />
+        <Button label="加入購物車" severity="danger" class="mt-2 rounded-full w-full" :loading="addingToCart" @click="handleAddToCart" />
       </div>
     </div>
   </div>

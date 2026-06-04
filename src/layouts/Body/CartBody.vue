@@ -10,6 +10,7 @@ const authStore = useAuthStore()
 
 // ── 載入購物車資料 ────────────────────────────────────────
 const loading = ref(false)
+const dataLoaded = ref(false) // 防止未載入完成就觸發 onUnmounted 存回空陣列
 
 function parseUserIdFromToken(token: string): string {
   try {
@@ -30,12 +31,13 @@ onMounted(async () => {
   const items = await cartApi(userId.value)
   cartStore.setItems(items)
   loading.value = false
+  dataLoaded.value = true // 標記資料已成功載入，離開時才允許儲存
 })
 
 // ── 離開頁面時自動儲存數量變更 ───────────────────────────
 // 使用 onUnmounted 而非每次 updateQuantity 都發請求，避免頻繁 API 呼叫
 onUnmounted(async () => {
-  if (!userId.value) { return }
+  if (!userId.value || !dataLoaded.value) { return }
   await updateCartApi(userId.value, cartStore.items)
 })
 

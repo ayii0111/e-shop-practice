@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Image, Paginator, Skeleton } from 'primevue'
 import { useProductList } from '../ProductDisplay'
-import { toggleLikeApi } from '@services'
+import { addToCartApi, toggleLikeApi } from '@services'
 import { useAuthStore } from '@stores/useAuthStore'
+import { useCartStore } from '@stores/useCartStore'
 import { useWarpToast } from '@util'
 
 // 吐司元件回報單純成敗結果
@@ -19,6 +20,21 @@ const route = useRoute()
 const { products, loading, total, offset } = useProductList(() => route.params.productList as string)
 
 const authStore = useAuthStore()
+const cartStore = useCartStore()
+
+async function handleAddToCart(productId: string, productName: string) {
+  if (!authStore.user?.id) {
+    useWarpToast('請先登入', '登入後才能加入購物車', 'warn')
+    return
+  }
+  await addToCartApi(authStore.user.id, productId, 1)
+  // 同步本地 store，讓 badge 即時更新
+  // init 有防重複機制，這裡用 setItems 觸發重拉
+  const { cartApi } = await import('@services')
+  const items = await cartApi(authStore.user.id)
+  cartStore.setItems(items)
+  useWarpToast('已加入購物車', productName, 'success')
+}
 
 const imagePt = {
   image: { class: 'w-full h-full object-cover' },
@@ -86,7 +102,7 @@ async function handleToggleLike(productId: string, isCurrentlyLiked: boolean) {
             <RouterLink :to="`/products/${item.product_id}`" class="hover:bg-[--secondary-color] py-2 border-r">
               查看商品
             </RouterLink>
-            <a href="" class="hover:bg-[--secondary-color] py-2">加到購物車</a>
+            <a href="" class="hover:bg-[--secondary-color] py-2" @click.prevent="handleAddToCart(item.product_id, item.name)">加到購物車</a>
           </div>
         </div>
       </template>

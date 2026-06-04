@@ -255,3 +255,44 @@ export async function productDetailApi(
   // RPC 回傳陣列，取第一筆
   return resp?.data?.[0] ?? null
 }
+
+/**
+ * 將商品加入購物車（或若已存在則累加數量）
+ * 做法：讀取當前 cart_list → 前端合併 → 整個覆寫回去
+ */
+export async function addToCartApi(userId: string, productId: string, quantity: number = 1): Promise<void> {
+  // Step 1：讀取當前 cart_list
+  const [readError, readResp] = await to(
+    supabaseApi.get(`/user_profiles?user_id=eq.${userId}&select=cart_list`),
+  ) as [Error, any]
+
+  if (readError) {
+    useWarpToast('加入購物車失敗', readError.message)
+    return
+  }
+
+  const currentList: RawCartEntry[] = readResp?.data?.[0]?.cart_list ?? []
+
+  // Step 2：若商品已存在則累加數量，否則新增
+  const existing = currentList.find(entry => entry.product_id === productId)
+  const newList: RawCartEntry[] = existing
+    ? currentList.map(entry =>
+      entry.product_id === productId
+        ? { ...entry, quantity: entry.quantity + quantity }
+        : entry,
+    )
+    : [...currentList, { product_id: productId, quantity }]
+
+  // Step 3：覆寫回去
+  const [writeError] = await to(
+    supabaseApi.patch(
+      `/user_profiles?user_id=eq.${userId}`,
+      { cart_list: newList },
+    ),
+  ) as [Error, any]
+
+  if (writeError) {
+    useWarpToast('加入購物車失敗', writeError.message)
+    debugLog('addToCartApi 失敗', () => writeError)
+  }
+}

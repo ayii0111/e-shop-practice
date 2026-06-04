@@ -81,7 +81,6 @@ export const useCartStore = defineStore('cart', () => {
     const loaded = await cartApi(userId)
     setItems(loaded)
   }
-
   return {
     items,
     checkedIds,
