@@ -1,169 +1,20 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Accordion, AccordionContent, AccordionHeader, AccordionPanel, Button, Divider, Tag } from 'primevue'
 import { useToast } from 'primevue/usetoast'
+import { getOrdersApi } from '@services'
+import type { Order, OrderStatus } from '@services'
+import { useAuthStore } from '@stores/useAuthStore'
 
 const toast = useToast()
+const authStore = useAuthStore()
 
-// 訂單狀態類型
-type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+const orders = ref<Order[]>([])
 
-// 訂單項目介面
-interface OrderItem {
-  id: string
-  productName: string
-  productImage?: string
-  quantity: number
-  price: number
-  subtotal: number
-}
-
-// 訂單介面
-interface Order {
-  id: string
-  orderNumber: string
-  orderDate: string
-  status: OrderStatus
-  items: OrderItem[]
-  totalAmount: number
-  shippingFee: number
-  discount: number
-  finalAmount: number
-  shippingAddress: string
-  paymentMethod: string
-  trackingNumber?: string
-  estimatedDelivery?: string
-  note?: string
-}
-
-// 模擬訂單數據
-const orders = ref<Order[]>([
-  {
-    id: '1',
-    orderNumber: 'ORD-2026050001',
-    orderDate: '2026-05-01 14:30:25',
-    status: 'delivered',
-    items: [
-      {
-        id: '1-1',
-        productName: '無線藍牙耳機 Pro Max',
-        quantity: 1,
-        price: 2990,
-        subtotal: 2990,
-      },
-      {
-        id: '1-2',
-        productName: '手機保護殼',
-        quantity: 2,
-        price: 299,
-        subtotal: 598,
-      },
-    ],
-    totalAmount: 3588,
-    shippingFee: 80,
-    discount: 100,
-    finalAmount: 3568,
-    shippingAddress: '台北市信義區信義路五段7號',
-    paymentMethod: '信用卡',
-    trackingNumber: '1234567890',
-    estimatedDelivery: '2026-05-03',
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD-2026050002',
-    orderDate: '2026-05-02 10:15:00',
-    status: 'shipped',
-    items: [
-      {
-        id: '2-1',
-        productName: '智能手錶 Series 8',
-        quantity: 1,
-        price: 8990,
-        subtotal: 8990,
-      },
-    ],
-    totalAmount: 8990,
-    shippingFee: 0,
-    discount: 500,
-    finalAmount: 8490,
-    shippingAddress: '新北市板橋區文化路一段188號',
-    paymentMethod: 'LINE Pay',
-    trackingNumber: '0987654321',
-    estimatedDelivery: '2026-05-05',
-  },
-  {
-    id: '3',
-    orderNumber: 'ORD-2026050003',
-    orderDate: '2026-05-03 16:45:30',
-    status: 'processing',
-    items: [
-      {
-        id: '3-1',
-        productName: '筆記型電腦 15吋',
-        quantity: 1,
-        price: 35900,
-        subtotal: 35900,
-      },
-      {
-        id: '3-2',
-        productName: '無線滑鼠',
-        quantity: 1,
-        price: 890,
-        subtotal: 890,
-      },
-    ],
-    totalAmount: 36790,
-    shippingFee: 0,
-    discount: 0,
-    finalAmount: 36790,
-    shippingAddress: '台中市西屯區台灣大道三段99號',
-    paymentMethod: '貨到付款',
-    note: '請於平日上午配送',
-  },
-  {
-    id: '4',
-    orderNumber: 'ORD-2026050004',
-    orderDate: '2026-05-04 09:20:15',
-    status: 'pending',
-    items: [
-      {
-        id: '4-1',
-        productName: '運動水壺',
-        quantity: 3,
-        price: 450,
-        subtotal: 1350,
-      },
-    ],
-    totalAmount: 1350,
-    shippingFee: 60,
-    discount: 0,
-    finalAmount: 1410,
-    shippingAddress: '高雄市前金區中正四路211號',
-    paymentMethod: '超商取貨付款',
-  },
-  {
-    id: '5',
-    orderNumber: 'ORD-2026040025',
-    orderDate: '2026-04-25 13:10:00',
-    status: 'cancelled',
-    items: [
-      {
-        id: '5-1',
-        productName: '桌上型電風扇',
-        quantity: 1,
-        price: 1290,
-        subtotal: 1290,
-      },
-    ],
-    totalAmount: 1290,
-    shippingFee: 80,
-    discount: 0,
-    finalAmount: 1370,
-    shippingAddress: '台南市東區大學路一段1號',
-    paymentMethod: '信用卡',
-    note: '客戶要求取消',
-  },
-])
+onMounted(async () => {
+  if (!authStore.user?.id) { return }
+  orders.value = await getOrdersApi(authStore.user.id)
+})
 
 // 當前選擇的狀態篩選
 const selectedStatus = ref<string>('all')
@@ -371,6 +222,7 @@ const accordionContentPt = {
                           {{ item.productName }}
                         </div>
                         <div class="text-gray-600 text-sm scale-[0.8] sm:scale-100 origin-left">
+                          <span v-if="item.originalPrice > item.price" class="mr-1 line-through">{{ formatCurrency(item.originalPrice) }}</span>
                           {{ formatCurrency(item.price) }} × {{ item.quantity }}
                         </div>
                       </div>

@@ -296,3 +296,82 @@ export async function addToCartApi(userId: string, productId: string, quantity: 
     debugLog('addToCartApi 失敗', () => writeError)
   }
 }
+
+// ─── 訂單 API ─────────────────────────────────────────────────────────────────
+import type { Order, OrderItem, RawOrder } from './type'
+
+// ── 防腐層 mapper ──────────────────────────────────────────────────────────────
+function toOrder(raw: RawOrder): Order {
+  return {
+    id: raw.id,
+    orderNumber: raw.order_number,
+    orderDate: raw.order_date,
+    status: raw.status,
+    items: raw.items,
+    totalAmount: raw.total_amount,
+    shippingFee: raw.shipping_fee,
+    discount: raw.discount,
+    finalAmount: raw.final_amount,
+    shippingAddress: raw.shipping_address,
+    paymentMethod: raw.payment_method,
+    trackingNumber: raw.tracking_number ?? undefined,
+    estimatedDelivery: raw.estimated_delivery ?? undefined,
+    note: raw.note ?? undefined,
+  }
+}
+
+/**
+ * 建立訂單（結帳頁送出訂單時呼叫）
+ * items 直接存 jsonb，不另拆表
+ */
+export async function createOrderApi(userId: string, order: {
+  items: OrderItem[]
+  totalAmount: number
+  shippingFee: number
+  discount: number
+  finalAmount: number
+  shippingAddress: string
+  paymentMethod: string
+  note?: string
+}): Promise<Order | null> {
+  const orderNumber = `ORD-${Date.now()}`
+  const [error, resp] = await to(
+    supabaseApi.post('/orders', {
+      user_id: userId,
+      order_number: orderNumber,
+      items: order.items,
+      total_amount: order.totalAmount,
+      shipping_fee: order.shippingFee,
+      discount: order.discount,
+      final_amount: order.finalAmount,
+      shipping_address: order.shippingAddress,
+      payment_method: order.paymentMethod,
+      note: order.note ?? null,
+    }, { headers: { Prefer: 'return=representation' } }),
+  ) as [Error, any]
+
+  if (error) {
+    useWarpToast('建立訂單失敗', error.message)
+    debugLog('createOrderApi 失敗', () => error)
+    return null
+  }
+
+  const raw: RawOrder | undefined = resp?.data?.[0]
+  return raw ? toOrder(raw) : null
+}
+
+/** 取得用戶的訂單列表，依訂單時間新到舊排序 */
+export async function getOrdersApi(userId: string): Promise<Order[]> {
+  const [error, resp] = await to(
+    supabaseApi.get(`/orders?user_id=eq.${userId}&order=order_date.desc`),
+  ) as [Error, any]
+
+  if (error) {
+    useWarpToast('取得訂單失敗', error.message)
+    debugLog('getOrdersApi 失敗', () => error)
+    return []
+  }
+
+  const rawOrders: RawOrder[] = resp?.data ?? []
+  return rawOrders.map(toOrder)
+}

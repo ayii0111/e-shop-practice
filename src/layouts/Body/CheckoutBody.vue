@@ -2,7 +2,8 @@
 import { Button, Divider, InputText, Textarea } from 'primevue'
 import { useCartStore } from '@stores/useCartStore'
 import { useAuthStore } from '@stores/useAuthStore'
-import { supabaseApi } from '@services'
+import { createOrderApi, supabaseApi } from '@services'
+import type { OrderItem } from '@services'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -165,11 +166,36 @@ const canSubmit = computed(() =>
 
 async function submitOrder() {
   if (!canSubmit.value) { return }
+  if (!authStore.accessToken) { return }
   isSubmitting.value = true
   try {
-    // TODO: 串接真實 API
-    await new Promise(resolve => setTimeout(resolve, 1000)) // mock 延遲
-    // 成功後清空購物車勾選並跳轉訂單頁
+    const userId = parseUserIdFromToken(authStore.accessToken)
+    const paymentLabel = paymentOptions.find(o => o.value === selectedPayment.value)?.label ?? selectedPayment.value
+
+    const items: OrderItem[] = cartStore.checkedItems.map(item => ({
+      id: item.id,
+      productName: item.name,
+      productImage: item.image,
+      quantity: item.quantity,
+      price: item.salePrice,
+      originalPrice: item.originalPrice,
+      subtotal: item.salePrice * item.quantity,
+    }))
+
+    const order = await createOrderApi(userId, {
+      items,
+      totalAmount: subtotal.value,
+      shippingFee: shippingFee.value,
+      discount: discountAmount.value,
+      finalAmount: finalAmount.value,
+      shippingAddress: `${shipping.value.city}${shipping.value.address}`,
+      paymentMethod: paymentLabel,
+    })
+
+    if (!order) { return }
+
+    // 成功後清空已勾選的購物車項目並跳轉訂單頁
+    cartStore.checkedItems.forEach(item => cartStore.removeItem(item.id))
     router.push({ name: 'OrderlistTabPanel' })
   }
   finally {

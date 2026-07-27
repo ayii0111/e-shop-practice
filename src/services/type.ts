@@ -34,3 +34,52 @@ export type RawProduct = {
   stock: number
   category: string
 }
+
+// ─── 訂單相關型別 ─────────────────────────────────────────────────────────────
+
+export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+
+export type OrderItem = {
+  id: string
+  productName: string
+  productImage?: string
+  quantity: number
+  price: number // 實賣價（下單當下的成交單價）
+  originalPrice: number // 原價（下單當下的商品原價快照，供折扣顯示用）
+  subtotal: number
+}
+
+export type Order = {
+  id: string
+  orderNumber: string
+  orderDate: string
+  status: OrderStatus
+  items: OrderItem[]
+  totalAmount: number
+  shippingFee: number
+  discount: number
+  finalAmount: number
+  shippingAddress: string
+  paymentMethod: string
+  trackingNumber?: string
+  estimatedDelivery?: string
+  note?: string
+}
+
+/** Supabase orders 資料表的原始欄位（snake_case，與前端 Order 屬性名稱不同） */
+export type RawOrder = {
+  id: string
+  order_number: string
+  order_date: string
+  status: OrderStatus
+  items: OrderItem[]
+  total_amount: number
+  shipping_fee: number
+  discount: number
+  final_amount: number
+  shipping_address: string
+  payment_method: string
+  tracking_number: string | null
+  estimated_delivery: string | null
+  note: string | null
+}
