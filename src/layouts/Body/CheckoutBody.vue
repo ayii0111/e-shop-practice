@@ -2,8 +2,8 @@
 import { Button, Divider, InputText, Textarea } from 'primevue'
 import { useCartStore } from '@stores/useCartStore'
 import { useAuthStore } from '@stores/useAuthStore'
-import { createOrderApi, supabaseApi } from '@services'
-import type { OrderItem } from '@services'
+import { createOrderApi, fetchCouponApi, supabaseApi } from '@services'
+import type { Coupon, OrderItem } from '@services'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -16,6 +16,7 @@ onMounted(() => {
   }
   else {
     loadShippingFromProfile()
+    restoreCouponsFromStorage()
   }
 })
 
@@ -67,71 +68,107 @@ function parseUserIdFromToken(token: string): string {
   catch { return '' }
 }
 
+/** 缺漏的送貨欄位（依填寫狀態動態列出） */
+const missingShippingFields = computed(() => {
+  const fieldLabels: Record<keyof ShippingAddress, string> = {
+    fullName: '收件人姓名',
+    phone: '聯絡電話',
+    city: '城市',
+    postalCode: '',
+    address: '詳細地址',
+  }
+  return (Object.keys(fieldLabels) as (keyof ShippingAddress)[])
+    .filter(key => fieldLabels[key] && !shipping.value[key])
+    .map(key => fieldLabels[key])
+})
+
 /** 地址是否完整 */
-const isShippingComplete = computed(() =>
-  !!shipping.value.fullName
-  && !!shipping.value.phone
-  && !!shipping.value.city
-  && !!shipping.value.address,
-)
+const isShippingComplete = computed(() => missingShippingFields.value.length === 0)
 // #endregion
 
 // ═══════════════════════════════════════════════════════
 // #region: 付款方式
 // ═══════════════════════════════════════════════════════
 const paymentOptions = [
-  { label: '信用卡', value: 'credit_card', icon: ['fas', 'credit-card'] },
-  { label: 'LINE Pay', value: 'line_pay', icon: ['fab', 'line'] },
-  { label: '超商取貨付款', value: 'cvs_cod', icon: ['fas', 'store'] },
-  { label: '貨到付款', value: 'cod', icon: ['fas', 'truck'] },
+  { label: '信用卡', value: 'credit_card', icon: ['fas', 'credit-card'], disabled: true },
+  { label: 'LINE Pay', value: 'line_pay', icon: ['fab', 'line'], disabled: true },
+  { label: '超商取貨付款', value: 'cvs_cod', icon: ['fas', 'store'], disabled: false },
+  { label: '貨到付款', value: 'cod', icon: ['fas', 'truck'], disabled: false },
 ]
-const selectedPayment = ref<string>('credit_card')
+const selectedPayment = ref<string>('cvs_cod')
 // #endregion
 
 // ═══════════════════════════════════════════════════════
 // #region: 優惠券
+// 可疊加套用多組優惠碼，真實查 coupon_templates 驗證（已移除舊版前端硬編碼 mock）
+// 已套用清單暫存在 localStorage，離開結帳頁（例如回商品頁加購）再回來不用重打
 // ═══════════════════════════════════════════════════════
-const couponCode = ref('')
-const couponDiscount = ref(0)
+const couponCodeInput = ref('')
 const couponError = ref('')
-const couponApplied = ref(false)
+const appliedCoupons = ref<Coupon[]>([])
 
-// mock 優惠券資料庫（之後可換成 API）
-const MOCK_COUPONS: Record<string, number> = {
-  WELCOME100: 100,
-  VIP80OFF: 0, // 百分比折扣另外處理，這裡先 mock 為 0
-  SAVE100: 100,
+function couponStorageKey(): string | null {
+  if (!authStore.accessToken) { return null }
+  const userId = parseUserIdFromToken(authStore.accessToken)
+  return userId ? `checkout_applied_coupons:${userId}` : null
 }
 
-function applyCoupon() {
-  const code = couponCode.value.trim().toUpperCase()
+function persistCoupons() {
+  const key = couponStorageKey()
+  if (!key) { return }
+  localStorage.setItem(key, JSON.stringify(appliedCoupons.value.map(c => c.coupon_code)))
+}
+
+/** 頁面載入時，把暫存的優惠碼重新向後端驗證一次（避免優惠券狀態已變但沿用舊結果） */
+async function restoreCouponsFromStorage() {
+  const key = couponStorageKey()
+  if (!key) { return }
+  let codes: string[] = []
+  try {
+    codes = JSON.parse(localStorage.getItem(key) ?? '[]')
+  }
+  catch { return }
+
+  for (const code of codes) {
+    const coupon = await fetchCouponApi(code)
+    if (coupon) { appliedCoupons.value.push(coupon) }
+  }
+  persistCoupons() // 把驗證失敗（已失效）的優惠碼從暫存清掉
+}
+
+async function applyCoupon() {
+  const code = couponCodeInput.value.trim().toUpperCase()
   couponError.value = ''
   if (!code) {
     couponError.value = '請輸入優惠券代碼'
     return
   }
-  if (code in MOCK_COUPONS) {
-    couponDiscount.value = MOCK_COUPONS[code]
-    couponApplied.value = true
+  if (appliedCoupons.value.some(c => c.coupon_code === code)) {
+    couponError.value = '這組優惠券已經套用過了'
+    return
   }
-  else {
-    couponDiscount.value = 0
-    couponApplied.value = false
+
+  const coupon = await fetchCouponApi(code)
+  if (!coupon) {
     couponError.value = '優惠券代碼無效或已過期'
+    return
   }
+
+  appliedCoupons.value.push(coupon)
+  couponCodeInput.value = ''
+  persistCoupons()
 }
 
-function removeCoupon() {
-  couponCode.value = ''
-  couponDiscount.value = 0
-  couponApplied.value = false
-  couponError.value = ''
+function removeCoupon(code: string) {
+  appliedCoupons.value = appliedCoupons.value.filter(c => c.coupon_code !== code)
+  persistCoupons()
 }
 // #endregion
 
 // ═══════════════════════════════════════════════════════
 // #region: 金額計算
 // 設計原則：每個計算步驟獨立為一個 computed，方便增刪
+// 多張優惠券疊加套用順序（依業務規則固定）：threshold_discount（滿額固定折）→ percentage_discount（打折）→ free_shipping（運費歸零）
 // ═══════════════════════════════════════════════════════
 
 /** 步驟 1：勾選商品小計 */
@@ -139,19 +176,74 @@ const subtotal = computed(() =>
   cartStore.checkedItems.reduce((sum, item) => sum + item.salePrice * item.quantity, 0),
 )
 
-/** 步驟 2：運費（滿 1000 免運，否則 80 元） */
+/** 已套用的滿額固定折扣券（門檻用「原始小計」判斷，未達門檻的不生效） */
+const appliedThresholdCoupons = computed(() =>
+  appliedCoupons.value.filter(c =>
+    c.discount_type === 'threshold_discount'
+    && (c.threshold_amount == null || subtotal.value >= c.threshold_amount),
+  ),
+)
+
+/** 步驟 2：滿額固定折扣總額 */
+const thresholdDiscountAmount = computed(() =>
+  appliedThresholdCoupons.value.reduce((sum, c) => sum + (c.discount_value ?? 0), 0),
+)
+
+/** 扣完滿額固定折扣後的金額（不會小於 0） */
+const amountAfterThreshold = computed(() =>
+  Math.max(0, subtotal.value - thresholdDiscountAmount.value),
+)
+
+/** 已套用的百分比折扣券（在滿額折扣之後的基數上套用） */
+const appliedPercentageCoupons = computed(() =>
+  appliedCoupons.value.filter(c => c.discount_type === 'percentage_discount'),
+)
+
+/** 步驟 3：百分比折扣後的金額（多張疊乘） */
+const amountAfterPercentage = computed(() =>
+  appliedPercentageCoupons.value.reduce(
+    (amount, c) => amount * (1 - (c.discount_value ?? 0) / 100),
+    amountAfterThreshold.value,
+  ),
+)
+
+/** 百分比折扣實際折掉的金額（顯示明細用） */
+const percentageDiscountAmount = computed(() =>
+  amountAfterThreshold.value - amountAfterPercentage.value,
+)
+
+/** 優惠券折扣總額（不含運費，運費由免運券直接歸零處理） */
+const discountAmount = computed(() =>
+  thresholdDiscountAmount.value + percentageDiscountAmount.value,
+)
+
+/** 是否套用了免運費券 */
+const hasFreeShippingCoupon = computed(() =>
+  appliedCoupons.value.some(c => c.discount_type === 'free_shipping'),
+)
+
+/**
+ * 實際有生效、真的折抵到金額或運費的優惠券（用來記錄進訂單的 applied_coupon_codes）
+ * 跟 appliedCoupons 不同：appliedCoupons 是「使用者輸入過的全部優惠碼」，
+ * 未達門檻的滿額券雖然還顯示在畫面上（標「未達門檻」），但不該被記錄成「這筆訂單真的用到這張券」
+ */
+const effectiveCouponCodes = computed(() => [
+  ...appliedThresholdCoupons.value,
+  ...appliedPercentageCoupons.value,
+  ...appliedCoupons.value.filter(c => c.discount_type === 'free_shipping'),
+].map(c => c.coupon_code))
+
+/** 步驟 4：運費（滿 1000 免運，否則 80 元；有免運券則直接歸零，優先權最高） */
 const shippingFee = computed(() => {
+  if (hasFreeShippingCoupon.value) { return 0 }
   // 超商取貨付款固定 60 元
   if (selectedPayment.value === 'cvs_cod') { return 60 }
   return subtotal.value >= 1000 ? 0 : 80
 })
 
-/** 步驟 3：優惠券折扣 */
-const discountAmount = computed(() => couponDiscount.value)
-
-/** 步驟 4：最終金額 = 小計 + 運費 - 折扣 */
+/** 步驟 5：最終金額 = 折扣後金額 + 運費 */
 const finalAmount = computed(() =>
-  Math.max(0, subtotal.value + shippingFee.value - discountAmount.value),
+  Math.max(0, amountAfterPercentage.value + shippingFee.value),
 )
 // #endregion
 
@@ -169,7 +261,6 @@ async function submitOrder() {
   if (!authStore.accessToken) { return }
   isSubmitting.value = true
   try {
-    const userId = parseUserIdFromToken(authStore.accessToken)
     const paymentLabel = paymentOptions.find(o => o.value === selectedPayment.value)?.label ?? selectedPayment.value
 
     const items: OrderItem[] = cartStore.checkedItems.map(item => ({
@@ -182,20 +273,21 @@ async function submitOrder() {
       subtotal: item.salePrice * item.quantity,
     }))
 
-    const order = await createOrderApi(userId, {
+    const order = await createOrderApi({
       items,
-      totalAmount: subtotal.value,
       shippingFee: shippingFee.value,
       discount: discountAmount.value,
-      finalAmount: finalAmount.value,
       shippingAddress: `${shipping.value.city}${shipping.value.address}`,
       paymentMethod: paymentLabel,
+      appliedCouponCodes: effectiveCouponCodes.value,
     })
 
     if (!order) { return }
 
-    // 成功後清空已勾選的購物車項目並跳轉訂單頁
+    // 成功後清空已勾選的購物車項目、優惠碼暫存並跳轉訂單頁
     cartStore.checkedItems.forEach(item => cartStore.removeItem(item.id))
+    const key = couponStorageKey()
+    if (key) { localStorage.removeItem(key) }
     router.push({ name: 'OrderlistTabPanel' })
   }
   finally {
@@ -228,7 +320,7 @@ function formatCurrency(amount: number) {
           <div class="space-y-3">
             <div v-for="item in cartStore.checkedItems" :key="item.id" class="flex items-center gap-4 bg-gray-50 p-3 rounded-lg">
               <div class="flex justify-center items-center bg-gray-200 rounded w-14 h-14 shrink-0">
-                <img :src="`https://primefaces.org/cdn/primevue/images/product/${item.image}`" :alt="item.name" class="rounded w-full h-full object-cover" />
+                <img :src="item.image" :alt="item.name" class="rounded w-full h-full object-cover" />
               </div>
               <div class="flex-1 min-w-0">
                 <div class="font-medium truncate">
@@ -282,7 +374,7 @@ function formatCurrency(amount: number) {
           </div>
           <p v-if="!isShippingComplete" class="mt-2 text-red-500 text-sm">
             <font-awesome-icon :icon="['fas', 'circle-exclamation']" class="mr-1" />
-            請填寫完整的送貨地址
+            請填寫：{{ missingShippingFields.join('、') }}
           </p>
         </section>
 
@@ -295,41 +387,50 @@ function formatCurrency(amount: number) {
             付款方式
           </h2>
           <div class="gap-3 grid grid-cols-2 sm:grid-cols-4">
-            <button v-for="option in paymentOptions" :key="option.value" class="flex flex-col items-center gap-2 p-4 border-2 rounded-lg transition-all cursor-pointer" :class="selectedPayment === option.value
-              ? 'border-primary bg-primary/5 text-primary'
-              : 'border-gray-200 hover:border-gray-300 text-gray-600'" @click="selectedPayment = option.value">
+            <button v-for="option in paymentOptions" :key="option.value" :disabled="option.disabled" class="flex flex-col items-center gap-2 p-4 border-2 rounded-lg transition-all" :class="option.disabled
+              ? 'border-gray-100 text-gray-300 cursor-not-allowed'
+              : selectedPayment === option.value
+                ? 'border-primary bg-primary/5 text-primary cursor-pointer'
+                : 'border-gray-200 hover:border-gray-300 text-gray-600 cursor-pointer'" @click="!option.disabled && (selectedPayment = option.value)">
               <font-awesome-icon :icon="option.icon" class="text-2xl" />
               <span class="font-medium text-sm text-center">{{ option.label }}</span>
+              <span v-if="option.disabled" class="text-gray-400 text-xs">暫不開放</span>
             </button>
           </div>
         </section>
 
         <Divider />
 
-        <!-- 優惠券 -->
+        <!-- 優惠券：可疊加套用多組，每輸入一組就重新計算一次 -->
         <section data-section="優惠券">
           <h2 class="flex items-center gap-2 mb-4 font-semibold text-lg">
             <font-awesome-icon :icon="['fas', 'ticket']" class="text-primary" />
             優惠券
           </h2>
-          <div v-if="!couponApplied" class="flex gap-2">
-            <InputText v-model="couponCode" placeholder="輸入優惠券代碼" class="flex-1" @keyup.enter="applyCoupon" />
+          <div class="flex gap-2">
+            <InputText v-model="couponCodeInput" placeholder="輸入優惠券代碼，可連續輸入多組" class="flex-1" @keyup.enter="applyCoupon" />
             <Button label="套用" outlined @click="applyCoupon" />
-          </div>
-          <div v-else class="flex justify-between items-center bg-green-50 px-4 py-3 border border-green-200 rounded-lg">
-            <div class="flex items-center gap-2 text-green-700">
-              <font-awesome-icon :icon="['fas', 'circle-check']" />
-              <span class="font-medium">{{ couponCode.toUpperCase() }}</span>
-              <span class="text-sm">折抵 {{ formatCurrency(couponDiscount) }}</span>
-            </div>
-            <button class="text-gray-400 hover:text-gray-600 transition-colors" @click="removeCoupon">
-              <font-awesome-icon :icon="['fas', 'xmark']" />
-            </button>
           </div>
           <p v-if="couponError" class="mt-2 text-red-500 text-sm">
             <font-awesome-icon :icon="['fas', 'circle-exclamation']" class="mr-1" />
             {{ couponError }}
           </p>
+
+          <div v-if="appliedCoupons.length" class="space-y-2 mt-3">
+            <div v-for="coupon in appliedCoupons" :key="coupon.coupon_code" class="flex justify-between items-center bg-green-50 px-4 py-2 border border-green-200 rounded-lg">
+              <div class="flex items-center gap-2 text-green-700">
+                <font-awesome-icon :icon="['fas', 'circle-check']" />
+                <span class="font-medium">{{ coupon.coupon_code }}</span>
+                <span class="text-sm">{{ coupon.coupon_name }}</span>
+                <span v-if="coupon.discount_type === 'threshold_discount' && !appliedThresholdCoupons.includes(coupon)" class="text-orange-500 text-xs">
+                  （未達門檻 NT${{ coupon.threshold_amount }}，暫未生效）
+                </span>
+              </div>
+              <button class="text-gray-400 hover:text-gray-600 transition-colors" @click="removeCoupon(coupon.coupon_code)">
+                <font-awesome-icon :icon="['fas', 'xmark']" />
+              </button>
+            </div>
+          </div>
         </section>
       </div>
 
@@ -350,21 +451,26 @@ function formatCurrency(amount: number) {
             <!-- 運費 -->
             <div class="flex justify-between">
               <span class="text-gray-600">運費</span>
-              <span :class="shippingFee === 0 ? 'text-green-600 font-medium' : ''">
+              <span :class="shippingFee === 0 ? 'text-red-600 font-medium' : ''">
                 {{ shippingFee === 0 ? '免運費' : formatCurrency(shippingFee) }}
               </span>
             </div>
             <p v-if="shippingFee === 0 && selectedPayment !== 'cvs_cod'" class="-mt-1 text-green-600 text-xs">
               滿 NT$1,000 免運費
             </p>
-            <p v-if="selectedPayment === 'cvs_cod'" class="-mt-1 text-gray-400 text-xs">
-              超商取貨付款固定運費 NT$60
-            </p>
 
-            <!-- 優惠券折扣 -->
-            <div v-if="discountAmount > 0" class="flex justify-between text-green-600">
-              <span>優惠券折扣</span>
-              <span>- {{ formatCurrency(discountAmount) }}</span>
+            <!-- 優惠券折扣明細（依實際套用的每一張券分開列出） -->
+            <div v-for="coupon in appliedThresholdCoupons" :key="coupon.coupon_code" class="flex justify-between text-red-600">
+              <span>{{ coupon.coupon_name }}</span>
+              <span>- {{ formatCurrency(coupon.discount_value ?? 0) }}</span>
+            </div>
+            <div v-if="appliedPercentageCoupons.length" class="flex justify-between text-red-600">
+              <span>{{ appliedPercentageCoupons.map(c => c.coupon_name).join('、') }}</span>
+              <span>- {{ formatCurrency(percentageDiscountAmount) }}</span>
+            </div>
+            <div v-if="hasFreeShippingCoupon" class="flex justify-between text-red-600">
+              <span>免運費券</span>
+              <span>已套用</span>
             </div>
           </div>
 

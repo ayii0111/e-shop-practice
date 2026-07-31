@@ -1,13 +1,25 @@
 <script setup lang="ts">
 import { Listbox } from 'primevue'
+import { getCouponTemplatesApi } from '@services'
 
 const router = useRouter()
 const route = useRoute()
 
+// 目前可使用的優惠券數量（依 usability_enable + 有效期間判斷，見 CouponTabPanel.vue 的 getStatus）
+const availableCouponCount = ref(0)
+
+onMounted(async () => {
+  const coupons = await getCouponTemplatesApi()
+  const now = new Date()
+  availableCouponCount.value = coupons.filter(c =>
+    c.usability_enable && now >= new Date(c.valid_start_at) && now <= new Date(c.valid_end_at),
+  ).length
+})
+
 // #region: <Listbox> 左側分頁導航欄 ------------------------------
-const options = ref([
+const options = computed(() => [
   { label: '個人資料', icon: ['fas', 'address-card'], name: 'ProfileTabPanel' },
-  { label: '我的優惠券 (2)', icon: ['fas', 'ticket'], name: 'CouponTabPanel' },
+  { label: `我的優惠券 (${availableCouponCount.value})`, icon: ['fas', 'ticket'], name: 'CouponTabPanel' },
   { label: '我的訂單', icon: ['fas', 'file-lines'], name: 'OrderlistTabPanel' },
 ])
 

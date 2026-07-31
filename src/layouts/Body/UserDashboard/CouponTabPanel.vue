@@ -1,99 +1,54 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
+import { getCouponTemplatesApi } from '@services'
+import type { CouponTemplate } from '@services'
 
 const toast = useToast()
 
-// 優惠券數據結構
-interface Coupon {
-  id: string
-  title: string
-  code: string
-  startDate: string
-  endDate: string
-  status: 'available' | 'used' | 'expired' | 'upcoming'
-  userGroup: 'new_user' | 'vip' | 'all'
-  totalLimit: number
-  usedCount: number
-  remainingCount: number
-  discount?: string // 折扣說明，例如 "$100"
+// ── 前端硬編碼假資料（已改為串接 coupon_templates，保留註解供對照）──────────────
+// interface Coupon {
+//   id: string
+//   title: string
+//   code: string
+//   startDate: string
+//   endDate: string
+//   status: 'available' | 'used' | 'expired' | 'upcoming'
+//   userGroup: 'new_user' | 'vip' | 'all'
+//   totalLimit: number
+//   usedCount: number
+//   remainingCount: number
+//   discount?: string
+// }
+// const coupons = ref<Coupon[]>([...])
+
+const coupons = ref<CouponTemplate[]>([])
+
+onMounted(async () => {
+  coupons.value = await getCouponTemplatesApi()
+})
+
+// 優惠券目前狀態：沒有 per-user 領取/使用紀錄表，只能依 usability_enable + 有效期間判斷（無法區分「已使用」）
+type CouponStatus = 'available' | 'expired' | 'upcoming'
+function getStatus(coupon: CouponTemplate): CouponStatus {
+  const now = new Date()
+  if (now < new Date(coupon.valid_start_at)) { return 'upcoming' }
+  if (now > new Date(coupon.valid_end_at) || !coupon.usability_enable) { return 'expired' }
+  return 'available'
 }
 
-// 模擬優惠券數據
-const coupons = ref<Coupon[]>([
-  {
-    id: '1',
-    title: '新會員 $100 折價券',
-    code: 'WELCOME100',
-    startDate: '2026-05-01',
-    endDate: '2026-06-30',
-    status: 'available',
-    userGroup: 'new_user',
-    totalLimit: 1000,
-    usedCount: 234,
-    remainingCount: 766,
-    discount: '$100',
-  },
-  {
-    id: '2',
-    title: 'VIP 專屬 8 折優惠',
-    code: 'VIP80OFF',
-    startDate: '2026-05-01',
-    endDate: '2026-12-31',
-    status: 'available',
-    userGroup: 'vip',
-    totalLimit: 500,
-    usedCount: 89,
-    remainingCount: 411,
-    discount: '8折',
-  },
-  {
-    id: '3',
-    title: '母親節特惠券',
-    code: 'MOTHER2026',
-    startDate: '2026-04-01',
-    endDate: '2026-04-30',
-    status: 'expired',
-    userGroup: 'all',
-    totalLimit: 2000,
-    usedCount: 1856,
-    remainingCount: 144,
-    discount: '$200',
-  },
-  {
-    id: '4',
-    title: '夏季購物節優惠',
-    code: 'SUMMER2026',
-    startDate: '2026-06-01',
-    endDate: '2026-08-31',
-    status: 'upcoming',
-    userGroup: 'all',
-    totalLimit: 3000,
-    usedCount: 0,
-    remainingCount: 3000,
-    discount: '$150',
-  },
-  {
-    id: '5',
-    title: '滿千折百優惠券',
-    code: 'SAVE100',
-    startDate: '2026-05-01',
-    endDate: '2026-05-15',
-    status: 'used',
-    userGroup: 'all',
-    totalLimit: 1500,
-    usedCount: 1500,
-    remainingCount: 0,
-    discount: '$100',
-  },
-])
+// 折扣說明文字
+function getDiscountText(coupon: CouponTemplate): string {
+  if (coupon.discount_type === 'threshold_discount') { return `$${coupon.discount_value}` }
+  if (coupon.discount_type === 'percentage_discount') { return `${10 - (coupon.discount_value ?? 0) / 10}折` }
+  return '免運費'
+}
 
 // 根據狀態返回對應的 Message severity
-function getSeverity(status: Coupon['status']): 'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast' {
+function getSeverity(status: CouponStatus): 'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast' {
   const severityMap = {
     available: 'success',
-    used: 'secondary',
     expired: 'error',
     upcoming: 'info',
   }
@@ -101,10 +56,9 @@ function getSeverity(status: Coupon['status']): 'success' | 'info' | 'warn' | 'e
 }
 
 // 狀態文字
-function getStatusText(status: Coupon['status']): string {
+function getStatusText(status: CouponStatus): string {
   const statusMap = {
     available: '可使用',
-    used: '已使用',
     expired: '已過期',
     upcoming: '即將開始',
   }
@@ -118,21 +72,21 @@ function formatDate(dateString: string): string {
 }
 
 // 檢查是否在使用期限內
-function isWithinValidPeriod(coupon: Coupon): boolean {
+function isWithinValidPeriod(coupon: CouponTemplate): boolean {
   const now = new Date()
-  const startDate = new Date(coupon.startDate)
-  const endDate = new Date(coupon.endDate)
+  const startDate = new Date(coupon.valid_start_at)
+  const endDate = new Date(coupon.valid_end_at)
   return now >= startDate && now <= endDate
 }
 
 // 複製優惠券代碼
-async function copyCouponCode(coupon: Coupon) {
+async function copyCouponCode(coupon: CouponTemplate) {
   try {
-    await navigator.clipboard.writeText(coupon.code)
+    await navigator.clipboard.writeText(coupon.coupon_code)
     toast.add({
       severity: 'success',
       summary: '優惠券代碼已複製',
-      detail: `代碼：${coupon.code}`,
+      detail: `代碼：${coupon.coupon_code}`,
       life: 3000,
     })
   }
@@ -159,7 +113,7 @@ const messagePt = {
   <div class="coupon-panel">
     <!-- 優惠券列表 -->
     <div class="space-y-4">
-      <Message v-for="coupon in coupons" :key="coupon.id" :pt="messagePt" :dt="messageDt" :severity="getSeverity(coupon.status)" class="cursor-pointer coupon-card" :closable="false" @click="copyCouponCode(coupon)">
+      <Message v-for="coupon in coupons" :key="coupon.coupon_code" :pt="messagePt" :dt="messageDt" :severity="getSeverity(getStatus(coupon))" class="cursor-pointer coupon-card" :closable="false" @click="copyCouponCode(coupon)">
         <div class="flex md:flex-row flex-row-reverse justify-between items-center gap-2 p-4 w-full">
           <div class="flex items-center gap-2 w-full">
             <div data-section="左側圖標" class="hidden md:block flex-shrink-0 mr-2">
@@ -169,7 +123,7 @@ const messagePt = {
               <div class="flex flex-col items-start">
                 <div class="flex items-center mb-1">
                   <h3 class="mr-2 font-bold text-xs sm:text-xl">
-                    {{ coupon.title }}
+                    {{ coupon.coupon_name }}
                   </h3>
                   <button class="text-gray-400 hover:text-primary transition-colors">
                     <font-awesome-icon :icon="['fas', 'copy']" class="text-sm" />
@@ -178,24 +132,21 @@ const messagePt = {
                 <div data-section="活動期限" class="flex items-center justify-center">
                   <!-- 使用期限：已滿足使用期限時只顯示結束時間，未滿足時顯示開始和結束時間 -->
                   <span v-if="isWithinValidPeriod(coupon)" class=" inline-block text-gray-400 sm:text-xs scale-[0.8] sm:scale-100 origin-left whitespace-nowrap">
-                    活動結束於: {{ formatDate(coupon.endDate) }}</span>
+                    活動結束於: {{ formatDate(coupon.valid_end_at) }}</span>
                   <span v-else class="inline-block text-gray-400 sm:text-xs scale-[0.8] sm:scale-100 origin-left whitespace-nowrap">
-                    活動開始於: {{ formatDate(coupon.startDate) }}</span>
+                    活動開始於: {{ formatDate(coupon.valid_start_at) }}</span>
                 </div>
               </div>
-              <div v-if="isWithinValidPeriod(coupon)" data-section="剩餘數量" class=" flex justify-start items-center">
-                <span class=" text-gray-400 sm:text-xs scale-[0.9] sm:scale-100 origin-left">剩餘數量：</span>
-                <span class=" text-gray-400 sm:text-xs scale-[0.9] sm:scale-100 origin-left">{{ coupon.remainingCount }} </span>
-              </div>
+              <!-- 剩餘數量：coupon_templates 未開放 total_quota 給前端讀取，無法顯示 -->
             </div>
           </div>
           <!-- 右側折扣標籤 -->
-          <div v-if="coupon.discount" class="flex-shrink-0 bg-white shadow-md p-2 sm:px-4 sm:py-3 rounded-lg text-center">
+          <div class="flex-shrink-0 bg-white shadow-md p-2 sm:px-4 sm:py-3 rounded-lg text-center">
             <div class="font-bold text-primary text-2xl whitespace-nowrap">
-              {{ coupon.discount }}
+              {{ getDiscountText(coupon) }}
             </div>
             <div class="text-gray-600 text-xs">
-              折扣
+              {{ getStatusText(getStatus(coupon)) }}
             </div>
           </div>
         </div>

@@ -305,7 +305,7 @@ function toOrder(raw: RawOrder): Order {
   return {
     id: raw.id,
     orderNumber: raw.order_number,
-    orderDate: raw.order_date,
+    orderDate: raw.created_at,
     status: raw.status,
     items: raw.items,
     totalAmount: raw.total_amount,
@@ -322,32 +322,28 @@ function toOrder(raw: RawOrder): Order {
 
 /**
  * 建立訂單（結帳頁送出訂單時呼叫）
- * items 直接存 jsonb，不另拆表
+ * 走 RPC create_order：user_id 由後端用 auth.uid() 決定（不信任前端傳值），
+ * 同一交易內完成「檢查+扣庫存」與「寫入訂單」，庫存不足會整筆失敗
  */
-export async function createOrderApi(userId: string, order: {
+export async function createOrderApi(order: {
   items: OrderItem[]
-  totalAmount: number
   shippingFee: number
   discount: number
-  finalAmount: number
   shippingAddress: string
   paymentMethod: string
+  appliedCouponCodes?: string[]
   note?: string
 }): Promise<Order | null> {
-  const orderNumber = `ORD-${Date.now()}`
   const [error, resp] = await to(
-    supabaseApi.post('/orders', {
-      user_id: userId,
-      order_number: orderNumber,
-      items: order.items,
-      total_amount: order.totalAmount,
-      shipping_fee: order.shippingFee,
-      discount: order.discount,
-      final_amount: order.finalAmount,
-      shipping_address: order.shippingAddress,
-      payment_method: order.paymentMethod,
-      note: order.note ?? null,
-    }, { headers: { Prefer: 'return=representation' } }),
+    supabaseApi.post('/rpc/create_order', {
+      p_items: order.items,
+      p_shipping_fee: order.shippingFee,
+      p_discount: order.discount,
+      p_shipping_address: order.shippingAddress,
+      p_payment_method: order.paymentMethod,
+      p_applied_coupon_codes: order.appliedCouponCodes ?? [],
+      p_note: order.note ?? null,
+    }),
   ) as [Error, any]
 
   if (error) {
@@ -356,14 +352,83 @@ export async function createOrderApi(userId: string, order: {
     return null
   }
 
-  const raw: RawOrder | undefined = resp?.data?.[0]
+  const raw: RawOrder | undefined = Array.isArray(resp?.data) ? resp.data[0] : resp?.data
   return raw ? toOrder(raw) : null
+}
+
+/**
+ * 取消訂單（走 RPC cancel_order）
+ * 後端限制：只有 status='pending' 且是本人的訂單才能取消，取消時會自動回補庫存並寫入稽核日誌
+ */
+export async function cancelOrderApi(orderId: string): Promise<Order | null> {
+  const [error, resp] = await to(
+    supabaseApi.post('/rpc/cancel_order', { p_order_id: orderId }),
+  ) as [Error, any]
+
+  if (error) {
+    useWarpToast('取消訂單失敗', error.message)
+    debugLog('cancelOrderApi 失敗', () => error)
+    return null
+  }
+
+  const raw: RawOrder | undefined = Array.isArray(resp?.data) ? resp.data[0] : resp?.data
+  return raw ? toOrder(raw) : null
+}
+
+// ─── 優惠券 API ─────────────────────────────────────────────────────────────
+import type { Coupon, CouponTemplate } from './type'
+
+/**
+ * 驗證一組優惠碼是否現在可用（結帳頁輸入優惠碼時呼叫）
+ * usability_enable 由 coupon_templates 的排程自動維護，直接查這個欄位即可，不用自己比對時間
+ */
+export async function fetchCouponApi(code: string): Promise<Coupon | null> {
+  const [error, resp] = await to(
+    supabaseApi.get('/coupon_templates', {
+      params: {
+        coupon_code: `eq.${code}`,
+        usability_enable: 'eq.true',
+        select: 'coupon_code,coupon_name,discount_type,discount_value,threshold_amount',
+      },
+    }),
+  ) as [Error, any]
+
+  if (error) {
+    debugLog('fetchCouponApi 失敗', () => error)
+    return null
+  }
+
+  return resp?.data?.[0] ?? null
+}
+
+/**
+ * 取得「我的優惠券」頁面用的優惠券範本列表
+ * 只取已開放領取（claim_enable）的範本；沒有 per-user 領取/使用紀錄表，
+ * 故無法區分「已使用」「剩餘張數」，狀態只依 usability_enable + valid 期間判斷
+ */
+export async function getCouponTemplatesApi(): Promise<CouponTemplate[]> {
+  const [error, resp] = await to(
+    supabaseApi.get('/coupon_templates', {
+      params: {
+        claim_enable: 'eq.true',
+        select: 'coupon_code,coupon_name,coupon_description,discount_type,discount_value,threshold_amount,claim_enable,usability_enable,valid_start_at,valid_end_at',
+      },
+    }),
+  ) as [Error, any]
+
+  if (error) {
+    useWarpToast('取得優惠券失敗', error.message)
+    debugLog('getCouponTemplatesApi 失敗', () => error)
+    return []
+  }
+
+  return resp?.data ?? []
 }
 
 /** 取得用戶的訂單列表，依訂單時間新到舊排序 */
 export async function getOrdersApi(userId: string): Promise<Order[]> {
   const [error, resp] = await to(
-    supabaseApi.get(`/orders?user_id=eq.${userId}&order=order_date.desc`),
+    supabaseApi.get(`/orders?user_id=eq.${userId}&order=created_at.desc`),
   ) as [Error, any]
 
   if (error) {

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { Accordion, AccordionContent, AccordionHeader, AccordionPanel, Button, Divider, Tag } from 'primevue'
 import { useToast } from 'primevue/usetoast'
-import { getOrdersApi } from '@services'
+import { cancelOrderApi, getOrdersApi } from '@services'
 import type { Order, OrderStatus } from '@services'
 import { useAuthStore } from '@stores/useAuthStore'
 
@@ -134,25 +134,41 @@ function trackShipment(order: Order) {
   }
 }
 
-// 取消訂單
-function cancelOrder(order: Order) {
-  toast.add({
-    severity: 'warn',
-    summary: '取消訂單',
-    detail: `確定要取消訂單 ${order.orderNumber} 嗎？`,
-    life: 3000,
-  })
+// 取消訂單（呼叫 cancel_order RPC：只有 pending 狀態的自己的訂單能取消，後端會回補庫存）
+const cancellingOrderIds = ref<Set<string>>(new Set())
+
+async function cancelOrder(order: Order) {
+  if (cancellingOrderIds.value.has(order.id)) { return }
+  cancellingOrderIds.value.add(order.id)
+  try {
+    const updated = await cancelOrderApi(order.id)
+    if (!updated) { return }
+
+    const target = orders.value.find(o => o.id === order.id)
+    if (target) { target.status = updated.status }
+
+    toast.add({
+      severity: 'success',
+      summary: '訂單已取消',
+      detail: `訂單 ${order.orderNumber} 已成功取消`,
+      life: 3000,
+    })
+  }
+  finally {
+    cancellingOrderIds.value.delete(order.id)
+  }
 }
 
-// 申請退款
-function requestRefund(order: Order) {
-  toast.add({
-    severity: 'info',
-    summary: '申請退款',
-    detail: `訂單 ${order.orderNumber} 退款申請已送出`,
-    life: 3000,
-  })
-}
+// 申請退款：目前後端沒有對應的退款 API（api.ts 只有 create_order / cancel_order RPC），
+// 原本這裡只是彈個假 toast 假裝送出成功，並未真的送出任何請求，先註解掉避免誤導使用者
+// function requestRefund(order: Order) {
+//   toast.add({
+//     severity: 'info',
+//     summary: '申請退款',
+//     detail: `訂單 ${order.orderNumber} 退款申請已送出`,
+//     life: 3000,
+//   })
+// }
 
 const accordionContentPt = {
   content: 'max-sm:!px-3',
@@ -214,8 +230,9 @@ const accordionContentPt = {
                 <div class="space-y-2">
                   <div v-for="item in order.items" :key="item.id" class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
                     <div class="flex items-center gap-3">
-                      <div class="flex justify-center items-center bg-gray-200 rounded w-12 h-12">
-                        <font-awesome-icon :icon="['fas', 'box']" class="text-gray-400" />
+                      <div class="flex flex-shrink-0 justify-center items-center bg-gray-200 rounded w-12 h-12 overflow-hidden">
+                        <img v-if="item.productImage" :src="item.productImage" :alt="item.productName" class="w-full h-full object-cover">
+                        <font-awesome-icon v-else :icon="['fas', 'box']" class="text-gray-400" />
                       </div>
                       <div>
                         <div class="max-sm:max-w-[183px] font-medium truncate">
@@ -250,7 +267,7 @@ const accordionContentPt = {
                     <span class="text-gray-600">運費</span>
                     <span>{{ order.shippingFee === 0 ? '免運費' : formatCurrency(order.shippingFee) }}</span>
                   </div>
-                  <div v-if="order.discount > 0" class="flex justify-between text-green-600">
+                  <div v-if="order.discount > 0" class="flex justify-between text-red-600">
                     <span>折扣優惠</span>
                     <span>- {{ formatCurrency(order.discount) }}</span>
                   </div>
@@ -310,8 +327,9 @@ const accordionContentPt = {
               <!-- 操作按鈕 -->
               <div class="flex flex-wrap gap-2">
                 <Button v-if="order.status === 'shipped' || order.status === 'delivered'" label="追蹤物流" icon="pi pi-map-marker" severity="info" size="small" outlined @click="trackShipment(order)" />
-                <Button v-if="order.status === 'pending'" label="取消訂單" icon="pi pi-times" severity="danger" size="small" outlined @click="cancelOrder(order)" />
-                <Button v-if="order.status === 'delivered'" label="申請退款" icon="pi pi-replay" severity="warn" size="small" outlined @click="requestRefund(order)" />
+                <Button v-if="order.status === 'pending'" label="取消訂單" icon="pi pi-times" severity="danger" size="small" outlined :loading="cancellingOrderIds.has(order.id)" @click="cancelOrder(order)" />
+                <!-- 申請退款：後端無對應 API，暫時隱藏，見上方 requestRefund 註解 -->
+                <!-- <Button v-if="order.status === 'delivered'" label="申請退款" icon="pi pi-replay" severity="warn" size="small" outlined @click="requestRefund(order)" /> -->
                 <Button label="聯絡客服" icon="pi pi-comments" severity="secondary" size="small" outlined />
               </div>
             </div>
@@ -321,7 +339,7 @@ const accordionContentPt = {
     </div>
 
     <!-- 空狀態 -->
-    <div v-else class="py-12 text-gray-500 text-center">
+    <div v-else class="flex flex-col justify-center items-center py-12 min-h-[400px] text-gray-500 text-center">
       <font-awesome-icon :icon="['fas', 'shopping-bag']" class="mb-4 text-gray-300 text-6xl" />
       <p class="text-lg">
         {{ selectedStatus === 'all' ? '目前沒有訂單' : '目前沒有符合條件的訂單' }}

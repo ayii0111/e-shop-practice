@@ -14,7 +14,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.7,
     description: '柔軟合身剪裁，百搭白色毛衣，適合各種場合穿搭。',
     created_at: new Date('2024-10-01'),
-    updated_at: new Date('2024-11-15'),
   },
   {
     product_id: 'top-002',
@@ -28,7 +27,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.3,
     description: '輕薄透氣細肩帶設計，素色簡約風格，夏日必備單品。',
     created_at: new Date('2024-09-15'),
-    updated_at: new Date('2024-10-20'),
   },
   {
     product_id: 'top-003',
@@ -42,7 +40,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.1,
     description: '寬鬆版型黑色上衣，慵懶街頭風格，男女皆宜。',
     created_at: new Date('2024-08-20'),
-    updated_at: new Date('2024-09-10'),
   },
   {
     product_id: 'top-004',
@@ -56,7 +53,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.8,
     description: '街頭潮流夾克，多口袋設計，秋冬必備外搭單品。',
     created_at: new Date('2024-10-10'),
-    updated_at: new Date('2024-11-01'),
   },
   {
     product_id: 'top-005',
@@ -70,7 +66,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.4,
     description: '吸濕排汗機能布料，修身剪裁，運動休閒兩用。',
     created_at: new Date('2024-07-01'),
-    updated_at: new Date('2024-08-15'),
   },
   {
     product_id: 'top-006',
@@ -84,7 +79,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.2,
     description: '活力橘色調，寬鬆版型，為日常穿搭增添亮點。',
     created_at: new Date('2024-11-01'),
-    updated_at: new Date('2024-11-20'),
   },
 
   // ── 下半身 bottom ────────────────────────────────────────
@@ -100,7 +94,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.5,
     description: '寬鬆直筒版型，柔軟面料，舒適日常首選長褲。',
     created_at: new Date('2024-09-01'),
-    updated_at: new Date('2024-10-05'),
   },
   {
     product_id: 'btm-002',
@@ -114,7 +107,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.6,
     description: '高彈力瑜伽褲，水藍色系清新，運動瑜伽皆適用。',
     created_at: new Date('2024-10-15'),
-    updated_at: new Date('2024-11-10'),
   },
   {
     product_id: 'btm-003',
@@ -128,7 +120,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.3,
     description: '時尚蛇皮紋印花裙，個性十足，派對約會必備。',
     created_at: new Date('2024-11-05'),
-    updated_at: new Date('2024-11-18'),
   },
   {
     product_id: 'btm-004',
@@ -142,7 +133,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.7,
     description: '經典直筒牛仔褲，耐穿耐洗，百搭日常必備款。',
     created_at: new Date('2024-08-01'),
-    updated_at: new Date('2024-09-20'),
   },
   {
     product_id: 'btm-005',
@@ -156,7 +146,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.5,
     description: '上下身牛仔套裝，復古水洗工藝，整套穿搭省心又時尚。',
     created_at: new Date('2024-10-20'),
-    updated_at: new Date('2024-11-12'),
   },
 
   // ── 鞋 shoes ─────────────────────────────────────────────
@@ -172,7 +161,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.2,
     description: '簡約百搭黑色平底鞋，舒適好穿，上班通勤首選。',
     created_at: new Date('2024-07-15'),
-    updated_at: new Date('2024-09-01'),
   },
   {
     product_id: 'shoes-002',
@@ -186,7 +174,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.0,
     description: '輕便涼鞋設計，透氣舒適，夏日海邊或日常皆宜。',
     created_at: new Date('2024-06-01'),
-    updated_at: new Date('2024-07-20'),
   },
 
   // ── 飾品 accessory ───────────────────────────────────────
@@ -202,7 +189,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.8,
     description: '埃及風格幾何耳環，金屬質感，為造型增添神秘氣息。',
     created_at: new Date('2024-11-01'),
-    updated_at: new Date('2024-11-15'),
   },
   {
     product_id: 'acc-002',
@@ -216,7 +202,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.5,
     description: '天然石材手環，帶有禪意美感，日常配戴或送禮皆宜。',
     created_at: new Date('2024-09-10'),
-    updated_at: new Date('2024-10-01'),
   },
   {
     product_id: 'acc-003',
@@ -230,7 +215,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.1,
     description: '金屬感黑色手環，個性龐克風格，搭配各種穿搭皆出色。',
     created_at: new Date('2024-10-25'),
-    updated_at: new Date('2024-11-08'),
   },
   {
     product_id: 'acc-004',
@@ -244,7 +228,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.4,
     description: '透明鏡框黑色細節，文青知性風格，無度數裝飾眼鏡。',
     created_at: new Date('2024-08-10'),
-    updated_at: new Date('2024-09-25'),
   },
   {
     product_id: 'acc-005',
@@ -258,7 +241,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.6,
     description: '極簡黑白配色腕錶，皮革錶帶，日常商務皆適合。',
     created_at: new Date('2024-11-10'),
-    updated_at: new Date('2024-11-20'),
   },
 
   // ── 配件 life ────────────────────────────────────────────
@@ -274,7 +256,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.3,
     description: '小巧白色手提袋，簡約設計，日常外出輕便好搭。',
     created_at: new Date('2024-09-05'),
-    updated_at: new Date('2024-10-10'),
   },
   {
     product_id: 'life-002',
@@ -288,7 +269,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.7,
     description: '精緻手拿包，多夾層設計，晚宴派對或日常皆適用。',
     created_at: new Date('2024-10-18'),
-    updated_at: new Date('2024-11-05'),
   },
   {
     product_id: 'life-003',
@@ -302,7 +282,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.0,
     description: '大容量白色帆布購物袋，環保耐用，日常採購好幫手。',
     created_at: new Date('2024-07-20'),
-    updated_at: new Date('2024-08-30'),
   },
   {
     product_id: 'life-004',
@@ -316,7 +295,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.9,
     description: '經典黑色硬殼筆記本，內頁空白，書寫流暢，收藏必備。',
     created_at: new Date('2024-11-08'),
-    updated_at: new Date('2024-11-18'),
   },
   {
     product_id: 'life-005',
@@ -330,7 +308,6 @@ export const mockProducts: Product[] = [
     average_rating: 4.6,
     description: '大容量多夾層後背包，防潑水材質，通勤旅行皆實用。',
     created_at: new Date('2024-10-28'),
-    updated_at: new Date('2024-11-14'),
   },
   {
     product_id: 'life-006',
@@ -344,6 +321,5 @@ export const mockProducts: Product[] = [
     average_rating: 4.4,
     description: '英倫復古風格套裝，格紋設計，優雅知性氣質十足。',
     created_at: new Date('2024-11-15'),
-    updated_at: new Date('2024-11-20'),
   },
 ]

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { Avatar, Button, Card, Divider, InputMask, InputText, Message, Skeleton, Textarea } from 'primevue'
+import { Button, Card, Divider, InputMask, InputText, Message, Skeleton, Textarea } from 'primevue'
 // import { useToast } from 'primevue/usetoast'
-import { debugLog, useWarpToast } from '@util'
+import { debugLog, useRetryImage, useWarpToast } from '@util'
 import { supabaseApi } from '@services'
 import { useAuthStore } from '@stores/useAuthStore'
 
@@ -58,6 +58,11 @@ const isEditing = ref(false)
 const loading = ref(true) // 初始為 true，確保第一次載入時顯示 Skeleton
 // accessToken 統一從 authStore 取得，不再自行管理
 const accessToken = computed(() => authStore.accessToken)
+
+// 頭像圖片載入失敗自動重試（見 useRetryImage 註解：Google 頭像網址剛授權完成時 CDN 可能短暫還沒就緒）
+const { currentSrc: avatarSrc, loaded: avatarLoaded, hasSrc: avatarHasSrc, onLoad: onAvatarLoad, onError: onAvatarError } = useRetryImage(
+  () => userProfile.value.avatar_url,
+)
 
 // 從 JWT token 解析 user_id（token payload 的 sub 欄位）
 // JWT 使用 URL-safe Base64，需先將 - 換回 +、_ 換回 / 才能用 atob 解析
@@ -251,7 +256,11 @@ function onSessionExpired() {
         </div>
         <!-- 實際頭部 -->
         <div v-else class="flex flex-wrap items-center gap-6 bg-gray-100 p-6">
-          <Avatar :image="userProfile.avatar_url" size="xlarge" shape="circle" class="shadow-lg border-4 border-white" />
+          <div v-if="!avatarHasSrc" class="flex justify-center items-center bg-gray-200 shadow-lg border-4 border-white rounded-full w-[100px] h-[100px]">
+            <font-awesome-icon :icon="['fas', 'circle-user']" class="text-gray-400 text-5xl" />
+          </div>
+          <Skeleton v-else-if="!avatarLoaded" shape="circle" size="100px" class="shadow-lg border-4 border-white" />
+          <img v-show="avatarHasSrc && avatarLoaded" :src="avatarSrc" alt="" class="shadow-lg border-4 border-white rounded-full w-[100px] h-[100px] object-cover" @load="onAvatarLoad" @error="onAvatarError">
           <div class="flex-1">
             <h2 class="mb-2 font-bold text-2xl">
               {{ userProfile.display_name || '未設定姓名' }}
@@ -429,9 +438,4 @@ function onSessionExpired() {
   width: 100%;
 }
 
-// 自訂 Avatar 樣式
-:deep(.p-avatar) {
-  width: 100px;
-  height: 100px;
-}
 </style>

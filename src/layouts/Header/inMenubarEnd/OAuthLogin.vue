@@ -1,62 +1,34 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { Listbox, Popover } from 'primevue'
+import { Listbox, Popover, Skeleton } from 'primevue'
 import axios from 'axios'
-import { debugLog, useWarpToast } from '@util'
+import { debugLog, useGoogleLogin, useRetryImage, useWarpToast } from '@util'
+import { getCouponTemplatesApi } from '@services'
 import { useAuthStore } from '@stores/useAuthStore'
 import { useCartStore } from '@stores/useCartStore'
 
-const loading = ref(false)
 const authStore = useAuthStore()
+const { loginWithGoogle, loading } = useGoogleLogin()
+
+// 頭像圖片載入失敗自動重試（見 useRetryImage 註解：Google 頭像網址剛授權完成時 CDN 可能短暫還沒就緒）
+const { currentSrc: avatarSrc, loaded: avatarLoaded, hasSrc: avatarHasSrc, onLoad: onAvatarLoad, onError: onAvatarError } = useRetryImage(
+  () => authStore.user?.user_metadata?.avatar_url ?? '',
+)
+
+// 目前可使用的優惠券數量（依 usability_enable + 有效期間判斷，見 CouponTabPanel.vue 的 getStatus）
+const availableCouponCount = ref(0)
+
+onMounted(async () => {
+  const coupons = await getCouponTemplatesApi()
+  const now = new Date()
+  availableCouponCount.value = coupons.filter(c =>
+    c.usability_enable && now >= new Date(c.valid_start_at) && now <= new Date(c.valid_end_at),
+  ).length
+})
 
 // #region 第三方登入驗證: ------------------------------
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
 const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string
-
-// PKCE 工具函式：產生隨機的 code_verifier
-function generateCodeVerifier(): string {
-  const array = new Uint8Array(32)
-  crypto.getRandomValues(array)
-  // 轉成 base64url 格式
-  return btoa(String.fromCharCode(...array))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-}
-
-// PKCE 工具函式：把 code_verifier 做 SHA-256 hash 產生 code_challenge
-async function generateCodeChallenge(verifier: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(verifier)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  return btoa(String.fromCharCode(...new Uint8Array(hashBuffer)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-}
-
-async function loginWithGoogle() {
-  loading.value = true
-
-  try {
-    // PKCE 第一步：產生 code_verifier 並存到 sessionStorage，等重導向回來後使用
-    const codeVerifier = generateCodeVerifier()
-    sessionStorage.setItem('pkce_code_verifier', codeVerifier)
-
-    // 記住登入前用戶瀏覽到一半的頁面，登入後導回（使用 hash，因為 router 用 createWebHashHistory）
-    sessionStorage.setItem('login_redirect', window.location.hash || '#/')
-
-    // PKCE 第二步：產生 code_challenge 帶進授權 URL
-    const codeChallenge = await generateCodeChallenge(codeVerifier)
-
-    // 組出 Supabase OAuth 授權 URL，讓瀏覽器跳頁到 Google 登入頁
-    // 在 Supabase 後台設定的跳轉回來的白名單網址，他是固定的，因此無法由這裡去設計，每次登入回來的頁面，就是你登入前瀏覽到一半的頁面
-    const redirectTo = encodeURIComponent(`${window.location.origin}${import.meta.env.BASE_URL}`)
-    // 透過頁面跳轉導航到 Supabase 處理授權的端點
-    window.location.href
-      = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${redirectTo}&code_challenge=${codeChallenge}&code_challenge_method=s256`
-  }
-  catch (error: any) {
-    useWarpToast('跳轉登入頁面前，發生錯誤', error.message)
-    loading.value = false
-  }
-}
 
 // 重導向回來後，手動用 axios 把 URL 上的 code 換成 access_token
 async function exchangeCodeForToken() {
@@ -124,10 +96,10 @@ onMounted(async () => {
 
 const selectedUserOption = ref()
 
-const userOptions = ref([
+const userOptions = computed(() => [
   { label: '登出', icon: ['fas', 'right-from-bracket'], routeName: '' },
   { label: '個人資料', icon: ['fas', 'address-card'], routeName: 'ProfileTabPanel' },
-  { label: '我的優惠券 (2)', icon: ['fas', 'ticket'], routeName: 'CouponTabPanel' },
+  { label: `我的優惠券 (${availableCouponCount.value})`, icon: ['fas', 'ticket'], routeName: 'CouponTabPanel' },
   { label: '我的訂單', icon: ['fas', 'file-lines'], routeName: 'OrderlistTabPanel' },
 ])
 
@@ -181,7 +153,9 @@ const popoverDt = {
       <!-- <img :src="authStore.user.user_metadata.avatar_url" class="rounded-full size-6" alt=""> -->
       <div class="flex justify-center card">
         <button type="button" class="" @click="toggle">
-          <img :src="authStore.user?.user_metadata?.avatar_url" class="rounded-full size-6" alt="">
+          <font-awesome-icon v-if="!avatarHasSrc" :icon="['fas', 'circle-user']" class="text-gray-400 text-xl" />
+          <Skeleton v-else-if="!avatarLoaded" shape="circle" size="1.5rem" />
+          <img v-show="avatarHasSrc && avatarLoaded" :src="avatarSrc" class="rounded-full size-6" alt="" @load="onAvatarLoad" @error="onAvatarError">
         </button>
 
         <Popover ref="popoverOpreation" :dt="popoverDt">

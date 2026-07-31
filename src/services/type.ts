@@ -8,7 +8,6 @@ export type Product = {
   sku: string // 貨號（例如 TOP-2024-0001）
   stock: number // 庫存數量
   created_at: Date // 建立時間
-  updated_at: Date // 上次更新時間
   description: string // 商品描述
   category: string // 種類 (top / bottom / shoes / accessory / life)
   average_rating: number // 星等評價 (0–5)
@@ -66,11 +65,34 @@ export type Order = {
   note?: string
 }
 
+/** 優惠券範本（僅取結帳頁需要的欄位） */
+export type Coupon = {
+  coupon_code: string
+  coupon_name: string
+  discount_type: 'threshold_discount' | 'percentage_discount' | 'free_shipping'
+  discount_value: number | null
+  threshold_amount: number | null
+}
+
+/** 優惠券範本（「我的優惠券」頁面需要的公開欄位，見 coupon_templates 的 column-level GRANT） */
+export type CouponTemplate = {
+  coupon_code: string
+  coupon_name: string
+  coupon_description: string | null
+  discount_type: 'threshold_discount' | 'percentage_discount' | 'free_shipping'
+  discount_value: number | null
+  threshold_amount: number | null
+  claim_enable: boolean
+  usability_enable: boolean
+  valid_start_at: string
+  valid_end_at: string
+}
+
 /** Supabase orders 資料表的原始欄位（snake_case，與前端 Order 屬性名稱不同） */
 export type RawOrder = {
   id: string
   order_number: string
-  order_date: string
+  created_at: string
   status: OrderStatus
   items: OrderItem[]
   total_amount: number
