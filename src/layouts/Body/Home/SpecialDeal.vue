@@ -1,5 +1,19 @@
 <script setup lang="ts">
 import { Button } from 'primevue'
+import { useGoogleLogin } from '@util'
+import { useAuthStore } from '@stores/useAuthStore'
+
+const authStore = useAuthStore()
+const { loginWithGoogle } = useGoogleLogin()
+const router = useRouter()
+
+function handleClaim() {
+  if (authStore.user) {
+    router.push({ name: 'CouponTabPanel' })
+    return
+  }
+  loginWithGoogle()
+}
 </script>
 
 <template>
@@ -12,7 +26,7 @@ import { Button } from 'primevue'
         首次下單即享專屬禮遇，訂單金額每滿 $1000 自動折抵 $100，不限商品品項，輕鬆入手心儀好物，優惠直接扣，省錢不費力。
       </p>
     </div>
-    <Button class="px-3 py-1.5 w-40 btn-color">
+    <Button class="px-3 py-1.5 w-40 btn-color" @click="handleClaim">
       立即領取
     </Button>
   </div>

@@ -2,7 +2,7 @@
 import { Button, Divider, InputText, Textarea } from 'primevue'
 import { useCartStore } from '@stores/useCartStore'
 import { useAuthStore } from '@stores/useAuthStore'
-import { createOrderApi, fetchCouponApi, supabaseApi } from '@services'
+import { createOrderApi, fetchCouponApi, supabaseApi, updateCartApi } from '@services'
 import type { Coupon, OrderItem } from '@services'
 
 const router = useRouter()
@@ -21,7 +21,7 @@ onMounted(() => {
 })
 
 // ═══════════════════════════════════════════════════════
-// #region: 送貨地址
+// #region: 配送資訊
 // ═══════════════════════════════════════════════════════
 interface ShippingAddress {
   fullName: string
@@ -38,6 +38,18 @@ const shipping = ref<ShippingAddress>({
   postalCode: '',
   address: '',
 })
+
+/** profile 對應欄位名稱 */
+const shippingToProfileField: Record<keyof ShippingAddress, string> = {
+  fullName: 'full_name',
+  phone: 'phone',
+  city: 'city',
+  postalCode: 'postal_code',
+  address: 'address',
+}
+
+/** 載入當下，profile 裡原本是空的欄位（送出訂單時，這些欄位若被填上就回寫 profile） */
+const originallyEmptyProfileFields = ref<(keyof ShippingAddress)[]>([])
 
 /** 從用戶 profile 預填地址，若欄位為空則留白讓用戶填 */
 async function loadShippingFromProfile() {
@@ -56,8 +68,26 @@ async function loadShippingFromProfile() {
       postalCode: p.postal_code ?? '',
       address: p.address ?? '',
     }
+    originallyEmptyProfileFields.value = (Object.keys(shippingToProfileField) as (keyof ShippingAddress)[])
+      .filter(key => !shipping.value[key])
   }
   catch { /* 靜默失敗，讓用戶手動填 */ }
+}
+
+/** 將配送資訊中，補上原本 profile 為空欄位的值回寫到 user_profiles */
+async function fillEmptyProfileFieldsFromShipping() {
+  if (!authStore.accessToken) { return }
+  const patchBody = originallyEmptyProfileFields.value
+    .filter(key => shipping.value[key])
+    .reduce((body, key) => {
+      body[shippingToProfileField[key]] = shipping.value[key]
+      return body
+    }, {} as Record<string, string>)
+
+  if (Object.keys(patchBody).length === 0) { return }
+
+  const userId = parseUserIdFromToken(authStore.accessToken)
+  await to(supabaseApi.patch('/user_profiles', patchBody, { params: { user_id: `eq.${userId}` } }))
 }
 
 function parseUserIdFromToken(token: string): string {
@@ -284,8 +314,14 @@ async function submitOrder() {
 
     if (!order) { return }
 
+    // 把配送資訊中，補上的原本 profile 空欄位回寫到用戶個資
+    await fillEmptyProfileFieldsFromShipping()
+
     // 成功後清空已勾選的購物車項目、優惠碼暫存並跳轉訂單頁
     cartStore.checkedItems.forEach(item => cartStore.removeItem(item.id))
+    // 同步覆寫雲端 cart_list，避免下次登入/重整時已下單的商品又跑回購物車
+    const userId = parseUserIdFromToken(authStore.accessToken)
+    await updateCartApi(userId, cartStore.items)
     const key = couponStorageKey()
     if (key) { localStorage.removeItem(key) }
     router.push({ name: 'OrderlistTabPanel' })
@@ -344,11 +380,11 @@ function formatCurrency(amount: number) {
 
         <Divider />
 
-        <!-- 送貨地址 -->
-        <section data-section="送貨地址">
+        <!-- 配送資訊 -->
+        <section data-section="配送資訊">
           <h2 class="flex items-center gap-2 mb-4 font-semibold text-lg">
             <font-awesome-icon :icon="['fas', 'location-dot']" class="text-primary" />
-            送貨地址
+            配送資訊
           </h2>
           <div class="gap-4 grid grid-cols-1 sm:grid-cols-2">
             <div class="flex flex-col gap-1">

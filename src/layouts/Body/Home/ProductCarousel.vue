@@ -13,35 +13,40 @@ import 'swiper/css/pagination'
 import 'swiper/css/autoplay'
 import 'swiper/css/grid'
 
-import carol1 from '@/assets/CategoryCarousel_Images/carol_1547383616723.jpg'
-import carol2 from '@/assets/CategoryCarousel_Images/carol_1547383646743.jpg'
-import carol3 from '@/assets/CategoryCarousel_Images/carol_1547383672400.jpg'
-import carol4 from '@/assets/CategoryCarousel_Images/carol_1547383712130.jpg'
-import carol5 from '@/assets/CategoryCarousel_Images/carol_1547383726339.jpg'
-import carol6 from '@/assets/CategoryCarousel_Images/carol_1547383737063.jpg'
-import carol7 from '@/assets/CategoryCarousel_Images/carol_1547383749908.jpg'
-import carol8 from '@/assets/CategoryCarousel_Images/carol_1547383760395.jpg'
-import carol9 from '@/assets/CategoryCarousel_Images/carol_1547383770961.jpg'
-import carol10 from '@/assets/CategoryCarousel_Images/carol_1547383796345.jpg'
-import carol11 from '@/assets/CategoryCarousel_Images/carol_1547383785733.jpg'
-import carol12 from '@/assets/CategoryCarousel_Images/carol_1547383824144.jpg'
+import { categoryApi } from '@services'
+import type { RawProduct } from '@services/type'
+import { debugLog } from '@util'
 
 const modules = ref([Navigation, Pagination, Grid, Autoplay])
 
-const products = reactive([
-  { name: '商品名稱', category: '類別', imageUrl: carol1 },
-  { name: '商品名稱2', category: '類別2', imageUrl: carol2 },
-  { name: '商品名稱3', category: '類別3', imageUrl: carol3 },
-  { name: '商品名稱4', category: '類別4', imageUrl: carol4 },
-  { name: '商品名稱5', category: '類別5', imageUrl: carol5 },
-  { name: '商品名稱6', category: '類別6', imageUrl: carol6 },
-  { name: '商品名稱7', category: '類別7', imageUrl: carol7 },
-  { name: '商品名稱8', category: '類別8', imageUrl: carol8 },
-  { name: '商品名稱9', category: '類別9', imageUrl: carol9 },
-  { name: '商品名稱10', category: '類別10', imageUrl: carol10 },
-  { name: '商品名稱11', category: '類別11', imageUrl: carol11 },
-  { name: '商品名稱12', category: '類別12', imageUrl: carol12 },
-])
+const categoryLabelMap: Record<string, string> = {
+  top: '上半身',
+  bottom: '下半身',
+  shoes: '鞋',
+  accessory: '飾品',
+  life: '配件',
+}
+
+const products = ref<{ productId: string, name: string, category: string, imageUrl: string }[]>([])
+
+onMounted(async () => {
+  const [error, resp] = await to(categoryApi('all', 12, 0)) as [Error, any]
+  if (error) {
+    debugLog('首頁商品輪播取得商品失敗', () => error)
+    return
+  }
+  products.value = (resp?.data as RawProduct[] ?? []).map(product => ({
+    productId: product.product_id,
+    name: product.name,
+    category: categoryLabelMap[product.category] ?? product.category,
+    imageUrl: product.img_urls?.[0] ?? '',
+  }))
+})
+
+const router = useRouter()
+function goToProduct(productId: string) {
+  router.push({ name: 'ProductDetailBody', params: { id: productId } })
+}
 
 const breakpoints = useBreakpoints(breakpointsTailwind)
 
@@ -63,8 +68,8 @@ const slidesPerView = computed(() => {
       delay: 2000,
       disableOnInteraction: true,
     }">
-      <SwiperSlide v-for="{ name, category, imageUrl } in products" :key="name">
-        <div class="slide" :style="{ backgroundImage: `url(${imageUrl})` }">
+      <SwiperSlide v-for="{ productId, name, category, imageUrl } in products" :key="productId">
+        <div class="slide cursor-pointer" :style="{ backgroundImage: `url(${imageUrl})` }" @click="goToProduct(productId)">
           <span class="tittle">
             {{ category }}
           </span>
@@ -79,7 +84,10 @@ const slidesPerView = computed(() => {
 
 <style scoped lang="scss">
 .slide {
-  background: #fff;
+  background-color: #fff;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   height: 248px;
   position: relative;
   overflow: hidden;
