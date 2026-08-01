@@ -1,6 +1,6 @@
 import type { Product } from './type'
 
-export const mockProducts: Product[] = [
+export const mockProducts: Omit<Product, 'sku'>[] = [
   // ── 上半身 top ──────────────────────────────────────────
   {
     product_id: 'top-001',
@@ -322,4 +322,4 @@ export const mockProducts: Product[] = [
     description: '英倫復古風格套裝，格紋設計，優雅知性氣質十足。',
     created_at: new Date('2024-11-15'),
   },
-]
+].map((p) => ({ ...p, sku: p.product_id.toUpperCase() })) as Product[]
