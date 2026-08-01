@@ -12,7 +12,6 @@ declare module 'vue' {
     Categories: typeof import('./src/layouts/Body/Home/Categories.vue')['default']
     CategoryBar: typeof import('./src/layouts/Body/Home/CategoryBar.vue')['default']
     CheckoutBody: typeof import('./src/layouts/Body/CheckoutBody.vue')['default']
-    copy: typeof import('./src/layouts/Body/ProductDetailBody copy.vue')['default']
     CouponTabPanel: typeof import('./src/layouts/Body/UserDashboard/CouponTabPanel.vue')['default']
     Footer: typeof import('./src/layouts/Footer.vue')['default']
     Header: typeof import('./src/layouts/Header.vue')['default']
